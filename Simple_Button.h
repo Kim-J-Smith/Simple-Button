@@ -61,6 +61,8 @@ typedef uint8_t             simpleButton_Type_GPIOPinVal_t;
 // The type of EXTI_TRIGGER_X. (X can be FALLING / RAISING / ...)
 typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 
+#define SIMPLEBTN_EXTI_TRIGGER_FALLING      /* for example: EXTI_TRIGGER_FALLING */
+
 /** @b ================================================================ **/
 /** @b Initialization-Function */
 
@@ -120,7 +122,7 @@ static inline void simpleButton_Private_InitEXTI(
 /** @b Mode-Set */
 
     // Enable debug mode if this macro is defined as 1.
-#define SIMPLEBTN_MODE_ENABLE_DEBUG                     0
+#define SIMPLEBTN_MODE_ENABLE_DEBUG                     1
     // Enable combination mode if this macro is defined as 1.
 #define SIMPLEBTN_MODE_ENABLE_COMBINATION               1
     // Enable timer long-push mode if this macro is defined as 1.
@@ -130,7 +132,7 @@ static inline void simpleButton_Private_InitEXTI(
     // Enable only-use-default-time mode if this macro is defined as 1.
 #define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0
     // Enable multi-threads mode(enable this only when you do use multi-thread) if this macro is defined as 1.
-#define SIMPLEBTN_MODE_ENABLE_MULTI_THREADS             0
+#define SIMPLEBTN_MODE_ENABLE_MULTI_THREADS             1
 
 /** @b ================================================================ **/
 /** @b Namespace */
@@ -249,9 +251,9 @@ typedef void (* simpleButton_Type_ShortPushCallBack_t)(void);
 #endif /* SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0 */
 
 // Combination-Push callback function pointer Type
-#if SIMPLEBTN_MODE_ENABLE_COMBINATION == 1
+#if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
  typedef void (* simpleButton_Type_CombinationPushCallBack_t)(void);
-#endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION == 1 */
+#endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
 
 typedef void (* simpleButton_Type_AsynchronousHandler_t)(
             simpleButton_Type_ShortPushCallBack_t shortPushCallBack,
@@ -296,11 +298,15 @@ typedef enum simpleButton_Type_ButtonState_t {
 
 // struct for button private status.
 typedef struct simpleButton_Type_PrivateBtnStatus_t {
-    simpleButton_Type_GPIOBase_t    GPIOX_BASE;
-    uint32_t                        timeStamp_loop;
-    volatile uint32_t               timeStamp_interrupt;
+
+    uint32_t                        timeStamp_loop; /* used in while loop */
+
+    volatile uint32_t               timeStamp_interrupt; /* used in interrupt */
+
     volatile SIMPLEBTN_BITFIELD (simpleButton_Type_ButtonState_t) state : 8;
+
     uint8_t                         push_time;
+
 } simpleButton_Type_PrivateBtnStatus_t;
 
 // struct for combination status and config.
@@ -308,8 +314,11 @@ typedef struct simpleButton_Type_PrivateBtnStatus_t {
 
  struct simpleButton_Type_Button_t; // declare
  typedef struct simpleButton_Type_CmbBtnConfig_t {
+
     volatile struct simpleButton_Type_Button_t* previousButton;
+
     volatile simpleButton_Type_CombinationPushCallBack_t callBack;
+
  } simpleButton_Type_CmbBtnConfig_t;
 
 #endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
@@ -330,8 +339,11 @@ typedef struct simpleButton_Type_PublicBtnStatus_t {
 
 // struct for public method.
 typedef struct simpleButton_Type_ButtonMethod_t {
+
     simpleButton_Type_AsynchronousHandler_t asynchronousHandler;
+
     simpleButton_Type_InterruptHandler_t interruptHandler;
+
 } simpleButton_Type_ButtonMethod_t;
 
 /**
@@ -342,22 +354,35 @@ typedef struct simpleButton_Type_ButtonMethod_t {
  *              unless you know what you are doing.
  */
 typedef struct simpleButton_Type_Button_t {
+
     simpleButton_Type_ButtonMethod_t Methods;
+
     simpleButton_Type_PublicBtnStatus_t Public;
+
     simpleButton_Type_PrivateBtnStatus_t Private;
+
 } simpleButton_Type_Button_t;
 
 
+/**
+ * @brief           Initialize the status and config of button object.
+ * 
+ * @param[inout]    self - Pointer to the button object.
+ * @param[in]       GPIOX_BASE - The base address of the GPIO port 
+ *                  connected to the button.
+ * @param[in]       asynchronousHandler - Function pointer of asynchronous handler.
+ * @param[in]       interruptHandler - Function pointer of interrupt handler.
+ * 
+ * @return          None
+ */
 SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitStruct(
     simpleButton_Type_Button_t* self,
-    simpleButton_Type_GPIOBase_t GPIOX_BASE,
     simpleButton_Type_AsynchronousHandler_t asynchronousHandler,
     simpleButton_Type_InterruptHandler_t interruptHandler
 ) {
     SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN();
 
     /* Initialize the member variables and method */
-    self->Private.GPIOX_BASE = GPIOX_BASE;
     self->Private.push_time = 0;
     self->Private.state = simpleButton_State_Wait_For_Interrupt;
     self->Private.timeStamp_interrupt = 0;
@@ -380,6 +405,19 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitStruct(
     SIMPLEBTN_FUNC_CRITICAL_SECTION_END();
 }
 
+/**
+ * @brief           Initilize the button.
+ * 
+ * @param[inout]    self - Pointer to the button object.
+ * @param[in]       GPIOX_BASE - The base address of the GPIO port 
+ *                  connected to the button.
+ * @param[in]       GPIO_Pin_X - The GPIO Pin number connected to the button.
+ * @param[in]       EXTI_Trigger_X - The EXTI Trigger of the Pin.
+ * @param[in]       asynchronousHandler - Function pointer of asynchronous handler.
+ * @param[in]       interruptHandler - Function pointer of interrupt handler.
+ * 
+ * @return          None
+ */
 SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitButton(
     simpleButton_Type_Button_t* self,
     simpleButton_Type_GPIOBase_t GPIOX_BASE,
@@ -391,7 +429,6 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitButton(
 
     simpleButton_Private_InitStruct(
         self,
-        GPIOX_BASE,
         asynchronousHandler,
         interruptHandler
     );
@@ -404,6 +441,12 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitButton(
 
 }
 
+/**
+ * @brief           Change the status of each button when during the EXTI interrupt
+ *                  service routine.
+ * 
+ * @return          None
+ */
 SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InterruptHandler(
     simpleButton_Type_Button_t* self
 ) {
@@ -414,6 +457,323 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InterruptHandler(
         self->Private.timeStamp_interrupt = SIMPLEBTN_FUNC_GET_TICK();
         self->Private.state = simpleButton_State_Push_Delay;
     }
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateWaitForInterrupt_Handler(void) {
+    /* Do nothing */
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StatePushDelay_Handler(
+    simpleButton_Type_Button_t* const self,
+    const simpleButton_Type_GPIOBase_t gpiox_base,
+    const simpleButton_Type_GPIOPin_t  gpio_pin_x,
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val
+) {
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt <= SIMPLEBTN_TIME_PUSH_DELAY) {
+        return; /* still need wait */
+    }
+
+    if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) != normal_pin_val) {
+        self->Private.state = simpleButton_State_Wait_For_End;
+    } else {
+        if (self->Private.push_time == 0) {
+            self->Private.state = simpleButton_State_Wait_For_Interrupt;
+        } else {
+            self->Private.state = simpleButton_State_Wait_For_Repeat;
+        }
+    }
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateWaitForEnd_Handler(
+    simpleButton_Type_Button_t* const self,
+    const simpleButton_Type_GPIOBase_t gpiox_base,
+    const simpleButton_Type_GPIOPin_t  gpio_pin_x,
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val
+) {
+    if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) == normal_pin_val) {
+        self->Private.state = simpleButton_State_Release_Delay;
+    } else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > SIMPLEBTN_TIME__TIMEOUT_NORMAL) {
+
+#if defined(SIMPLEBTN_DEBUG)
+        SIMPLEBTN_FUNC_PANIC("normal long push time out", , );
+#else
+        self->Private.push_time = 0;
+        self->Private.state = simpleButton_State_Wait_For_Interrupt;
+#endif /* defined(SIMPLEBTN_DEBUG) */
+
+    }
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateWaitForRepeat_Handler(
+    simpleButton_Type_Button_t* const self
+) {
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN(); /* begin always critical section */
+
+#if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_loop > (uint32_t)self->Public.repeatWindowTime)
+#else
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_loop > SIMPLEBTN_TIME_REPEAT_WINDOW)
+#endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
+    {
+
+#if SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0
+        self->Private.state = simpleButton_State_Single_Push;
+#else
+        if (self->Private.push_time == 1) {
+            self->Private.state = simpleButton_State_Single_Push;
+        } else {
+            self->Private.state = simpleButton_State_Repeat_Push;
+        }
+#endif /* SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0 */
+
+    } // end if
+
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_END(); /* end always critical section */
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
+}
+
+// a helper function
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_Do_LongPush(
+    simpleButton_Type_Button_t* const self,
+    simpleButton_Type_LongPushCallBack_t longPushCallBack
+) {
+
+#if SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH == 0
+    (void)self;
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
+    if (longPushCallBack != 0) {
+        longPushCallBack();
+    }
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
+#else
+    uint32_t longPushTime = SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt;
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
+    if (longPushCallBack != 0) {
+        longPushCallBack(longPushTime);
+    }
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
+#endif /* SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH == 0 */
+
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_Do_ShortPush(
+    simpleButton_Type_ShortPushCallBack_t shortPushCallBack
+) {
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
+    if (shortPushCallBack != 0) {
+        shortPushCallBack();
+    }
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateSinglePush_Handler(
+    simpleButton_Type_Button_t* const self,
+    simpleButton_Type_ShortPushCallBack_t shortPushCallBack,
+    simpleButton_Type_LongPushCallBack_t longPushCallBack
+) {
+    
+#if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > (uint32_t)self->Public.longPushMinTime)
+#else
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > SIMPLEBTN_TIME_LONG_PUSH_MIN)
+#endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
+    {
+        simpleButton_Private_Do_LongPush(self, longPushCallBack);
+    } else {
+        simpleButton_Private_Do_ShortPush(shortPushCallBack);
+    }
+
+    self->Private.push_time = 0;
+    self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+    self->Private.state = simpleButton_State_Cool_Down;
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateRepeatPush_Handler(
+    simpleButton_Type_Button_t* const self,
+    simpleButton_Type_RepeatPushCallBack_t repeatPushCallBack
+) {
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
+
+    if (repeatPushCallBack != 0) {
+
+#if SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0
+        repeatPushCallBack();
+#else
+        repeatPushCallBack(self->Private.push_time);
+#endif /* SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0 */
+
+    } // end if
+
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
+    self->Private.push_time = 0;
+    self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+    self->Private.state = simpleButton_State_Cool_Down;
+}
+
+// a helper function
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_CmbBtnAfterReleaseOK(
+    simpleButton_Type_Button_t* const self
+) {
+#if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
+
+    if (self->Public.combinationConfig.callBack == 0 || self->Public.combinationConfig.previousButton == 0) {
+        return; /* user didn't use combination button */
+    }
+
+    /* prev-button should be [Combination]_WaitForEnd. */
+    if (self->Public.combinationConfig.previousButton->Private.state != simpleButton_State_Combination_WaitForEnd) {
+        if (self->Public.combinationConfig.previousButton->Private.state != simpleButton_State_Wait_For_End) {
+            return; /* prev-button isn't [Combination]_WaitForEnd. */
+        } else {
+            self->Public.combinationConfig.previousButton->Private.state = simpleButton_State_Combination_WaitForEnd;
+        }
+    }
+
+    self->Private.state = simpleButton_State_Combination_Push;
+
+#endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
+}
+
+// a helper function
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_ReleaseOK(
+    simpleButton_Type_Button_t* const self
+) {
+    self->Private.push_time ++;
+    self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+
+    /* enable counter-repeat-push or not */
+#if SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0
+    self->Private.state = (self->Private.push_time == 1)
+        ? simpleButton_State_Wait_For_Repeat : simpleButton_State_Repeat_Push;
+#else
+    self->Private.state = (self->Private.push_time < 0xFF)
+        ? simpleButton_State_Wait_For_Repeat : simpleButton_State_Repeat_Push;
+#endif /* SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0 */
+
+    simpleButton_Private_CmbBtnAfterReleaseOK(self);
+}
+
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateReleaseDelay_Handler(
+    simpleButton_Type_Button_t* const self,
+    const simpleButton_Type_GPIOBase_t gpiox_base,
+    const simpleButton_Type_GPIOPin_t  gpio_pin_x,
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val
+) {
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_loop <= SIMPLEBTN_TIME_RELEASE_DELAY) {
+        return; /* still need wait */
+    }
+
+    if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) == normal_pin_val) {
+        simpleButton_Private_ReleaseOK(self);
+    } else {
+        self->Private.state = simpleButton_State_Wait_For_End;
+    }
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateCoolDown_Handler(
+    simpleButton_Type_Button_t* const self
+) {
+#if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_loop > self->Public.coolDownTime)
+#else
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_loop > SIMPLEBTN_TIME_COOL_DOWN)
+#endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
+    {
+        self->Private.state = simpleButton_State_Wait_For_Interrupt;
+    }
+
+}
+
+#if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateCombinationPush_Handler(
+    simpleButton_Type_Button_t* const self
+) {
+    simpleButton_Type_CombinationPushCallBack_t cmbCallBack;
+    cmbCallBack = self->Public.combinationConfig.callBack;
+
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
+
+    if (cmbCallBack != 0) {
+        cmbCallBack();
+    }
+
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
+    self->Private.push_time = 0;
+    self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+    self->Private.state = simpleButton_State_Cool_Down;
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateCombinationWaitForEnd_Handler(
+    simpleButton_Type_Button_t* const self,
+    const simpleButton_Type_GPIOBase_t gpiox_base,
+    const simpleButton_Type_GPIOPin_t  gpio_pin_x,
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val
+) {
+    if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) == normal_pin_val) {
+        self->Private.state = simpleButton_State_Combination_Release;
+    } else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > SIMPLEBTN_TIME__TIMEOUT_COMBINATION) {
+
+#if defined(SIMPLEBTN_DEBUG)
+        SIMPLEBTN_FUNC_PANIC("combination long push time out", , );
+#else
+        self->Private.push_time = 0;
+        self->Private.state = simpleButton_State_Wait_For_Interrupt;
+#endif /* defined(SIMPLEBTN_DEBUG) */
+
+    }
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateCombinationRelease_Handler(
+    simpleButton_Type_Button_t* const self,
+    const simpleButton_Type_GPIOBase_t gpiox_base,
+    const simpleButton_Type_GPIOPin_t  gpio_pin_x,
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val
+) {
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_loop <= SIMPLEBTN_TIME_RELEASE_DELAY) {
+        return; /* still need wait */
+    }
+
+    if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) == normal_pin_val) {
+        self->Private.push_time = 0;
+        self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+        self->Private.state = simpleButton_State_Cool_Down;
+    } else {
+        self->Private.state = simpleButton_State_Combination_WaitForEnd;
+    }
+}
+
+#endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
+
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateDefault_Handler(
+    simpleButton_Type_Button_t* const self
+) {
+
+#if defined(SIMPLEBTN_DEBUG)
+    SIMPLEBTN_FUNC_PANIC("invalid button state", , );
+#else
+    self->Private.push_time = 0;
+    self->Private.state = simpleButton_State_Wait_For_Interrupt;
+#endif /* defined(SIMPLEBTN_DEBUG) */
+
 }
 
 #endif /* SIMPLEBUTTON_H__ */

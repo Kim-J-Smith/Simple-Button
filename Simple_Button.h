@@ -776,4 +776,241 @@ simpleButton_Private_StateDefault_Handler(
 
 }
 
+/**
+ * @brief           Asynchronously call the callback function in while loop.
+ * @param[inout]    self - pointer to self struct.
+ * @param[in]       gpiox_base - Address of GPIO port connected to the button.
+ * @param[in]       gpio_pin_x - GPIO pin number connected to the button.
+ * @param[in]       normal_pin_val - Normal(didn't push) pin value of button pin. (can be 1 or 0)
+ * @param[in]       shortPushCB - callback function for short push.
+ * @param[in]       longPushCB - callback function for long push.
+ * @param[in]       repeatPushCB - callback function for repeat push.
+ * @return          None
+ */
+SIMPLEBTN_SUGGEST_INLINE void
+simpleButton_Private_AsynchronousHandler(
+    simpleButton_Type_Button_t* const self,
+    const simpleButton_Type_GPIOBase_t gpiox_base,
+    const simpleButton_Type_GPIOPin_t  gpio_pin_x,
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val,
+    simpleButton_Type_ShortPushCallBack_t shortPushCB,
+    simpleButton_Type_LongPushCallBack_t longPushCB,
+    simpleButton_Type_RepeatPushCallBack_t repeatPushCB
+) {
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
+
+    switch ( (simpleButton_Type_ButtonState_t)(self->Private.state) ) {
+    case simpleButton_State_Wait_For_Interrupt: {
+        simpleButton_Private_StateWaitForInterrupt_Handler();
+        break;
+    }
+
+    case simpleButton_State_Push_Delay: {
+        simpleButton_Private_StatePushDelay_Handler(self, gpiox_base, gpio_pin_x, normal_pin_val);
+        break;
+    }
+
+    case simpleButton_State_Wait_For_End: {
+        simpleButton_Private_StateWaitForEnd_Handler(self, gpiox_base, gpio_pin_x, normal_pin_val);
+        break;
+    }
+
+    case simpleButton_State_Wait_For_Repeat: {
+        simpleButton_Private_StateWaitForRepeat_Handler(self);
+        break;
+    }
+
+    case simpleButton_State_Single_Push: {
+        simpleButton_Private_StateSinglePush_Handler(self, shortPushCB, longPushCB);
+        break;
+    }
+
+    case simpleButton_State_Repeat_Push: {
+        simpleButton_Private_StateRepeatPush_Handler(self, repeatPushCB);
+        break;
+    }
+
+    case simpleButton_State_Release_Delay: {
+        simpleButton_Private_StateReleaseDelay_Handler(self, gpiox_base, gpio_pin_x, normal_pin_val);
+        break;
+    }
+
+    case simpleButton_State_Cool_Down: {
+        simpleButton_Private_StateCoolDown_Handler(self);
+        break;
+    }
+
+#if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
+
+    case simpleButton_State_Combination_Push: {
+        simpleButton_Private_StateCombinationPush_Handler(self);
+        break;
+    }
+
+    case simpleButton_State_Combination_WaitForEnd: {
+        simpleButton_Private_StateCombinationWaitForEnd_Handler(self, gpiox_base, gpio_pin_x, normal_pin_val);
+        break;
+    }
+
+    case simpleButton_State_Combination_Release: {
+        simpleButton_Private_StateCombinationRelease_Handler(self, gpiox_base, gpio_pin_x, normal_pin_val);
+        break;
+    }
+
+#endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
+
+    default: {
+        simpleButton_Private_StateDefault_Handler(self);
+        break;
+    }
+
+    } // end switch
+
+    SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
+}
+
+
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) \
+    || (defined(__cplusplus) && __cplusplus >= 201103L)
+
+SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_Type_Button_t self) {
+    return (self.Private.state == simpleButton_State_Wait_For_Interrupt);
+}
+
+#define SIMPLEBTN_ISIDLE_1(Btn)         simpleButton_Private_IsIdle(Btn)
+
+#define SIMPLEBTN_ISIDLE_2(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_1(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_3(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_2(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_4(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_3(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_5(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_4(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_6(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_5(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_7(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_6(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_8(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_7(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_9(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_8(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_10(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_9(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_11(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_10(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_12(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_11(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_13(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_12(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_14(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_13(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_15(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_14(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_16(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_15(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_17(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_16(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_18(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_17(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_19(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_18(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_20(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_19(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_21(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_20(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_22(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_21(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_23(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_22(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_24(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_23(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_25(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_24(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_26(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_25(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_27(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_26(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_28(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_27(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_29(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_28(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_30(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_29(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_31(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_30(__VA_ARGS__))
+
+#define SIMPLEBTN_ISIDLE_32(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_31(__VA_ARGS__))
+
+#define SIMPLEBTN_ALLISIDLE(...)    \
+    SIMPLEBTN_CONNECT2(SIMPLEBTN_ISIDLE_, SIMPLEBTN_COUNT_ARGS(__VA_ARGS__))(__VA_ARGS__)
+
+/**
+ * @brief   Start low power if all of the buttons are idle.
+ * @param   __VA_ARGS__ - button object. (passing 1 ~ 32 parameters is OK)
+ * @return  None
+ */
+#define SIMPLEBTN__START_LOWPOWER(...)  \
+    do {                                            \
+        SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN();    \
+        if (SIMPLEBTN_ALLISIDLE(__VA_ARGS__)) {     \
+            SIMPLEBTN_FUNC_START_LOW_POWER();       \
+        }                                           \
+        SIMPLEBTN_FUNC_CRITICAL_SECTION_END();      \
+    } while (0)
+
+#endif /* >= C99 or C++11 */
+
+
+#define SIMPLEBTN__CREATE(GPIOx_BASE, GPIO_Pin_x, EXTI_Trigger_x, __name)       \
+    simpleButton_Type_Button_t                                                  \
+    SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name) = {0};                      \
+                                                                                \
+    static void                                                                 \
+    SIMPLEBTN_CONNECT2(simpleButton_Private_AsyHandler_, __name)(               \
+        simpleButton_Type_ShortPushCallBack_t  shortPushCallBack,               \
+        simpleButton_Type_LongPushCallBack_t   longPushCallBack,                \
+        simpleButton_Type_RepeatPushCallBack_t repeatPushCallBack               \
+    ) {                                                                         \
+        const uint8_t normalPinVal =                                            \
+            ((EXTI_Trigger_x) == SIMPLEBTN_EXTI_TRIGGER_FALLING) ? 1 : 0;       \
+                                                                                \
+        simpleButton_Private_AsynchronousHandler(                               \
+            &(SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name)),                 \
+            (GPIOx_BASE),                                                       \
+            (GPIO_Pin_x),                                                       \
+            normalPinVal,                                                       \
+            shortPushCallBack,                                                  \
+            longPushCallBack,                                                   \
+            repeatPushCallBack                                                  \
+        );                                                                      \
+    }                                                                           \
+                                                                                \
+    static void                                                                 \
+    SIMPLEBTN_CONNECT2(simpleButton_Private_ITHandler_, __name)(void) {         \
+        simpleButton_Private_InterruptHandler(                                  \
+            &(SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name))                  \
+        );                                                                      \
+    }                                                                           \
+                                                                                \
+    SIMPLEBTN_C_API void                                                        \
+    SIMPLEBTN_CONNECT3(SIMPLEBTN_NAMESPACE, __name, _Init)(void) {              \
+        simpleButton_Private_InitButton(                                        \
+            &(SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name)),                 \
+            (GPIOx_BASE),                                                       \
+            (GPIO_Pin_x),                                                       \
+            (EXTI_Trigger_x),                                                   \
+            &(SIMPLEBTN_CONNECT2(simpleButton_Private_AsyHandler_, __name)),    \
+            &(SIMPLEBTN_CONNECT2(simpleButton_Private_ITHandler_, __name))      \
+        );                                                                      \
+    }
+
+
+
+#define SIMPLEBTN__DECLARE(__name)                                              \
+    extern simpleButton_Type_Button_t                                           \
+    SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name);                            \
+    SIMPLEBTN_C_API void                                                        \
+    SIMPLEBTN_CONNECT3(SIMPLEBTN_NAMESPACE, __name, _Init)(void);
+
+
 #endif /* SIMPLEBUTTON_H__ */

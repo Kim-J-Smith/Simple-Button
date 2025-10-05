@@ -126,9 +126,9 @@ static inline void simpleButton_Private_InitEXTI(
     // Enable combination mode if this macro is defined as 1.
 #define SIMPLEBTN_MODE_ENABLE_COMBINATION               1
     // Enable timer long-push mode if this macro is defined as 1.
-#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH           0
+#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH           1
     // Enable counter repeat-push mode if this macro is defined as 1.
-#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH       0
+#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH       1
     // Enable only-use-default-time mode if this macro is defined as 1.
 #define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0
     // Enable multi-threads mode(enable this only when you do use multi-thread) if this macro is defined as 1.
@@ -961,6 +961,15 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
 #endif /* >= C99 or C++11 */
 
 
+/**
+ * @def         SIMPLEBTN__CREATE
+ * @brief       Creat a button.
+ * @param[in]   GPIOx_BASE - The address of GPIO port connected to button.
+ * @param[in]   GPIO_Pin_x - The number of the GPIO pin connected to button.
+ * @param[in]   EXTI_Trigger_x - The EXTI trigger.
+ * @param[in]   __name - The name of the button.
+ * @attention   EXTI_Trigger_x must choose between Raising and Falling.
+ */
 #define SIMPLEBTN__CREATE(GPIOx_BASE, GPIO_Pin_x, EXTI_Trigger_x, __name)       \
     simpleButton_Type_Button_t                                                  \
     SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name) = {0};                      \
@@ -1005,7 +1014,11 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
     }
 
 
-
+/**
+ * @def         SIMPLEBTN__DECLARE
+ * @param[in]   __name - The name of button.
+ * @attention   The name of button must be the same as it is when created.
+ */
 #define SIMPLEBTN__DECLARE(__name)                                              \
     extern simpleButton_Type_Button_t                                           \
     SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name);                            \

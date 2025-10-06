@@ -39,6 +39,8 @@
 
 3. ✅ **External Interrupt(EXTI)** : This project uses an external interrupt(EXTI) trigger button, *naturally supporting low power consumption*. The project also provides a line of code to determine and enter a low-power interface.
 
+4. ✅ **Asynchronous Processing** : The callback function is processed asynchronously to reduce the interrupt dwell time.
+
 4. ✅ **Secondary Confirmation** : This project performs secondary confirmation on the pin trigger signal, thereby supporting pins who have the same number in GPIOX to be used as button pins simultaneously, eliminating concerns about external interrupt conflicts.
 
 5. ✅ **Adjustable Time** : This project supports setting the *minimum time for long press determination, multi-click window time, and cooldown time* for each button separately, making it convenient for button customization.

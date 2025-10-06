@@ -113,6 +113,8 @@ static inline void simpleButton_Private_InitEXTI(
 #define SIMPLEBTN_TIME_REPEAT_WINDOW                    300
     // The cool-down time after you release the button.
 #define SIMPLEBTN_TIME_COOL_DOWN                        0
+    // The interval time to call callback function in hold-long-push mode.
+#define SIMPLEBTN_TIME_HOLD_INTERVAL                    200
     // The timeout time for normal long button.
 #define SIMPLEBTN_TIME__TIMEOUT_NORMAL                  (1000 * 120)
     // The timeout time for combination long button.
@@ -133,6 +135,8 @@ static inline void simpleButton_Private_InitEXTI(
 #define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0
     // Enable multi-threads mode(enable this only when you do use multi-thread) if this macro is defined as 1.
 #define SIMPLEBTN_MODE_ENABLE_MULTI_THREADS             1
+    // Enable long-push-hold mode if this macro is defined as 1.
+#define SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD             1
 
 /** @b ================================================================ **/
 /** @b Namespace */
@@ -294,6 +298,15 @@ typedef enum simpleButton_Type_ButtonState_t {
     simpleButton_State_Combination_Release,
 
 #endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
+
+#if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
+
+    simpleButton_State_Hold_Push,
+
+    simpleButton_State_Hold_Release,
+
+#endif /* SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0 */
+
 } simpleButton_Type_ButtonState_t;
 
 // struct for button private status.
@@ -494,8 +507,21 @@ simpleButton_Private_StateWaitForEnd_Handler(
     const simpleButton_Type_GPIOPinVal_t normal_pin_val
 ) {
     if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) == normal_pin_val) {
+        self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
         self->Private.state = simpleButton_State_Release_Delay;
-    } else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > SIMPLEBTN_TIME__TIMEOUT_NORMAL) {
+    } 
+#if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
+ #if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME != 0
+    else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > SIMPLEBTN_TIME_LONG_PUSH_MIN)
+ #else
+    else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > self->Public.longPushMinTime)
+ #endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME != 0 */
+    {
+        self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+        self->Private.state = simpleButton_State_Hold_Push;
+    }
+#endif /* SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0 */
+    else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > SIMPLEBTN_TIME__TIMEOUT_NORMAL) {
 
 #if defined(SIMPLEBTN_DEBUG)
         SIMPLEBTN_FUNC_PANIC("normal long push time out", , );
@@ -762,12 +788,57 @@ simpleButton_Private_StateCombinationRelease_Handler(
 #endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
 
 
+#if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateHoldPush_Handler(
+    simpleButton_Type_Button_t* const self,
+    const simpleButton_Type_GPIOBase_t gpiox_base,
+    const simpleButton_Type_GPIOPin_t  gpio_pin_x,
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val,
+    const simpleButton_Type_LongPushCallBack_t longPushCallBack
+) {
+    if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) == normal_pin_val) {
+        self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+        self->Private.state = simpleButton_State_Hold_Release;
+    }
+
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_loop > SIMPLEBTN_TIME_HOLD_INTERVAL) {
+        simpleButton_Private_Do_LongPush(self, longPushCallBack);
+        self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+    }
+}
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_Private_StateHoldRelease_Handler(
+    simpleButton_Type_Button_t* const self,
+    const simpleButton_Type_GPIOBase_t gpiox_base,
+    const simpleButton_Type_GPIOPin_t  gpio_pin_x,
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val
+) {
+    if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_loop <= SIMPLEBTN_TIME_RELEASE_DELAY) {
+        return; /* still need wait */
+    }
+
+    if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) == normal_pin_val) {
+        self->Private.push_time = 0;
+        self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
+        self->Private.state = simpleButton_State_Cool_Down;
+    } else {
+        self->Private.state = simpleButton_State_Hold_Push;
+    }
+}
+
+#endif /* SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0 */
+
+
 SIMPLEBTN_FORCE_INLINE void
 simpleButton_Private_StateDefault_Handler(
     simpleButton_Type_Button_t* const self
 ) {
 
 #if defined(SIMPLEBTN_DEBUG)
+    (void)self;
     SIMPLEBTN_FUNC_PANIC("invalid button state", , );
 #else
     self->Private.push_time = 0;
@@ -858,6 +929,20 @@ simpleButton_Private_AsynchronousHandler(
     }
 
 #endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
+
+#if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
+
+    case simpleButton_State_Hold_Push: {
+        simpleButton_Private_StateHoldPush_Handler(self, gpiox_base, gpio_pin_x, normal_pin_val, longPushCB);
+        break;
+    }
+
+    case simpleButton_State_Hold_Release: {
+        simpleButton_Private_StateHoldRelease_Handler(self, gpiox_base, gpio_pin_x, normal_pin_val);
+        break;
+    } 
+
+#endif /* SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0 */
 
     default: {
         simpleButton_Private_StateDefault_Handler(self);

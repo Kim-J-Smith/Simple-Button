@@ -1,6 +1,6 @@
 # Simple-Button
 [English](./README.md)
-[中文](./docs/README_zh.md)
+[中文](./README_zh.md)
 
 ---
 

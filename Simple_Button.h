@@ -31,17 +31,17 @@
  * 
  * 2. @e Simple-Button-Type (The Type of Simple-Button)
  * 
- * 3. @e Initialization-Function (To init the time-base? gpio? exti? nvic?)
+ * 3. @e Other-Functions (Functions for read-pin, debug, low-power, ...)
  * 
- * 4. @e Other-Functions (Functions for read-pin, debug, low-power, ...)
- * 
- * 5. @e Time-Set (To set the adjustable time, such as repeat-push window. 
+ * 4. @e Time-Set (To set the adjustable time, such as repeat-push window. 
  *                  All these times will be set as default times, 
  *                  which can still be changed for each button.)
  * 
- * 6. @e Mode-Set (The mode of button, such as combination / timer-long-push / ...)
+ * 5. @e Mode-Set (The mode of button, such as combination / timer-long-push / ...)
  * 
- * 7. @e Namespace (The namespace of Simple-Button public functions and variables)
+ * 6. @e Namespace (The namespace of Simple-Button public functions and variables)
+ * 
+ * 7. @e Initialization-Function (To init the GPIO, EXTI, NVIC/PFIC, etc)
  * 
  *************************************************************************
  */
@@ -62,22 +62,6 @@ typedef uint8_t             simpleButton_Type_GPIOPinVal_t;
 typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 
 #define SIMPLEBTN_EXTI_TRIGGER_FALLING      /* for example: EXTI_TRIGGER_FALLING */
-
-/** @b ================================================================ **/
-/** @b Initialization-Function */
-
-static inline void simpleButton_Private_InitEXTI(
-    simpleButton_Type_GPIOBase_t    GPIOX_Base,
-    simpleButton_Type_GPIOPin_t     GPIO_Pin_X,
-    simpleButton_Type_EXTITrigger_t EXTI_Trigger_X
-) {
-    /* Write your code to initialize the GPIO/EXTI/NVIC ... */
-
-    /* (void)xxx is used to suppress warning: "unused variables" */
-    (void)GPIOX_Base;
-    (void)GPIO_Pin_X;
-    (void)EXTI_Trigger_X;
-}
 
 /** @b ================================================================ **/
 /** @b Other-Functions */
@@ -148,6 +132,30 @@ static inline void simpleButton_Private_InitEXTI(
  *          Default: SimpleButton_
  */
 #define SIMPLEBTN_NAMESPACE                             SimpleButton_
+
+/** @b ================================================================ **/
+/** @b Initialization-Function */
+
+
+#if defined(__GNUC__) || defined(__clang__)
+    static inline __attribute__((always_inline))
+#elif defined(_MSC_VER) || defined(__CC_ARM)
+    static __forceinline
+#else
+    static inline
+#endif /* defined(__GNUC__) || defined(__clang__) */
+void simpleButton_Private_InitEXTI(
+    simpleButton_Type_GPIOBase_t    GPIOX_Base,
+    simpleButton_Type_GPIOPin_t     GPIO_Pin_X,
+    simpleButton_Type_EXTITrigger_t EXTI_Trigger_X
+) {
+    /* Write your code to initialize the GPIO/EXTI/NVIC ... */
+
+    /* (void)xxx is used to suppress warning: "unused variables" */
+    (void)GPIOX_Base;
+    (void)GPIO_Pin_X;
+    (void)EXTI_Trigger_X;
+}
 
 
 /* ====================== CUSTOMIZATION END ============================ */
@@ -1065,8 +1073,9 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
         simpleButton_Type_LongPushCallBack_t   longPushCallBack,                \
         simpleButton_Type_RepeatPushCallBack_t repeatPushCallBack               \
     ) {                                                                         \
-        const uint8_t normalPinVal =                                            \
-            ((EXTI_Trigger_x) == SIMPLEBTN_EXTI_TRIGGER_FALLING) ? 1 : 0;       \
+        const simpleButton_Type_GPIOPinVal_t normalPinVal =                     \
+            (simpleButton_Type_GPIOPinVal_t)                                    \
+            (((EXTI_Trigger_x) == SIMPLEBTN_EXTI_TRIGGER_FALLING) ? 1 : 0);     \
                                                                                 \
         simpleButton_Private_AsynchronousHandler(                               \
             &(SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name)),                 \

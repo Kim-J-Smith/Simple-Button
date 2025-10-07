@@ -15,6 +15,9 @@
 - [使用方法](#使用方法)
     - [概述](#概述)
     - [详细步骤](#详细步骤)
+        - [步骤1](#步骤1)
+        - [步骤2](#步骤2)
+    - [进阶功能](#进阶功能)
 
 - [衍生项目](#衍生项目)
 
@@ -77,7 +80,6 @@
     - 2.3   - 在`main`函数`while`循环之前调用按键初始化函数。
     - 2.4   - 在`while`循环内调用按键异步处理函数。
     - 2.5   - 在 EXTI 中断函数中调用按键中断处理函数。
-    - [2.6] - 使用 **SIMPLEBTN__START_LOWPOWER** 宏 启用低功耗。（如果需要低功耗）
 
 ### 详细步骤
 
@@ -260,6 +262,169 @@ void simpleButton_Private_InitEXTI(
 
 #### 步骤2
 
+0. 创建按键只需要一个宏就可以实现。但在实际项目中我们往往希望用一个单独的`.c`文件管理所有需要的按键，并提供一个`.h`文件作为使用的接口。本项目提供的两个接口宏分别可以很好的完成`创建`+`声明`两个工作。一般项目的目录结构如下，**下方步骤2.1~2.5使用的就是这样的目录结构**：
+```markdown
+.
+|
++-- Simple_Button.h  # 本项目提供的唯一文件
+|
++-- my_buttons.c  # 用户自己的文件，所有按键在这个文件内创建，统一管理。
+|
++-- my_buttons.h  # 用户自己的文件，所有按键的声明都在这个文件中。
+|
++-- main.c  # 用户自己的文件，包含 my_buttons.h ，使用按键。
+
+```
+
+1. 使用 **SIMPLEBTN__CREATE()** 宏 创建需要的按键。创建3个按键，分别连接`GPIOA-Pin0`, `GPIOB-Pin0`, `GPIOD-Pin14`，都是下降沿触发，分别起名为`SB1`, `SB2`, `SB3`，STM32-HAL示例如下（以下代码位于`my_buttons.c`）：
+```c
+#include "Simple_Button.h"
+
+/* 宏后方不用加 ';' */
+
+SIMPLEBTN__CREATE(GPIOA_BASE, GPIO_PIN_0, EXTI_TRIGGER_FALLING, SB1)
+
+SIMPLEBTN__CREATE(GPIOB_BASE, GPIO_PIN_0, EXTI_TRIGGER_FALLING, SB2)
+
+SIMPLEBTN__CREATE(GPIOD_BASE, GPIO_PIN_14, EXTI_TRIGGER_FALLING, SB3)
+
+```
+
+2. 使用 **SIMPLEBTN__DECLARE()** 宏 声明创建的按键（如果在另一个文件使用）。承接2.1创建的三个按键，这里演示如何在 `my_buttons.h` 中声明三个已创建的按键。
+```c
+#include "Simple_Button.h"
+
+/* 宏后方不用加 ';' */
+
+SIMPLEBTN__DECLARE(SB1)
+
+SIMPLEBTN__DECLARE(SB2)
+
+SIMPLEBTN__DECLARE(SB3)
+
+```
+
+3. 在`main`函数`while`循环之前调用按键初始化函数。承接前一步，示例如下：
+```c
+#include "my_buttons.h"
+
+int main(void) {
+
+    SimpleButton_SB1_Init();
+    SimpleButton_SB2_Init();
+    SimpleButton_SB3_Init();
+
+    while (1) {
+
+    }
+}
+
+```
+
+4. 在`while`循环内调用按键异步处理函数。承接上一步，准备好`短按`、`长按`、`双击`的回调函数（更多功能的用法详见[进阶功能](#进阶功能)），并传入`while`循环内按键异步处理函数，示例如下（以下代码位于`main.c`）：
+```c
+#include "my_buttons.h"
+
+/* 准备好`短按`、`长按`、`双击`的回调函数，默认情况下无参无返回值 */
+void TurnOn_LED(void) {
+    /* 函数名随意，无参无返回即可 */
+    /* 函数会在对应事件触发后被调用 */
+}
+
+void DoSomething(void) {
+    /* ... */
+}
+
+int main(void) {
+
+    SimpleButton_SB1_Init();
+    SimpleButton_SB2_Init();
+    SimpleButton_SB3_Init();
+
+    while (1) {
+        // 依次传入 `短按`、`长按`、`双击`的回调函数，不需要则传 NULL 或 0。
+        SimpleButton_SB1.Methods.asynchronousHandler(
+            TurnOn_LED,
+            NULL,
+            DoSomething
+        );
+        SimpleButton_SB2.Methods.asynchronousHandler(
+            NULL,
+            NULL,
+            DoSomething
+        );
+        SimpleButton_SB3.Methods.asynchronousHandler(
+            NULL,
+            DoSomething,
+            NULL
+        );
+    }
+}
+
+```
+
+5. 最后一步，在 EXTI 中断函数中调用按键中断处理函数。这里分为两种情况：1. **需要自己去实现中断函数**。 2. **已经有现成的中断回调函数**（如STM32的HAL库使用CubeMX生成代码），这里分别举例说明：
+
+    - **需要自己去实现中断函数**。大多数单片机裸机开发都需要这样做。去汇编启动文件中找到`中断向量表`，然后找到EXTI对应引脚的中断，实现中断函数。依旧承接上一步，以 STM32 标准库为例：
+
+    ```c
+        // SB1 与 SB2 都是Pin0
+        void EXTI0_IRQHandler(void) {
+            if (EXTI_GetITStatus(EXTI_Line0) == SET) {
+                SimpleButton_SB1.Methods.interruptHandler();
+                SimpleButton_SB2.Methods.interruptHandler();
+
+                EXTI_ClearITPendingBit(EXTI_Line0);
+            }
+        }
+
+        // SB3 是 Pin14
+        void EXTI15_10_IRQHandler(void) {
+            if (EXTI_GetITStatus(EXTI_Line14) == SET) {
+                SimpleButton_SB3.Methods.interruptHandler();
+
+                EXTI_ClearITPendingBit(EXTI_Line14);
+            }
+        }
+    ```
+
+    - **已经有现成的中断回调函数**。直接找到生成好的回调函数，在其中调用`interruptHandler()`即可。承接上一步，以STM32 CubeMX生成的HAL库为例，在`stm32f1xx_hal_gpio.c`里提供了这个弱函数接口：
+    ```c
+    __weak void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+    {
+        /* Prevent unused argument(s) compilation warning */
+        UNUSED(GPIO_Pin);
+        /* NOTE: This function Should not be modified, when the callback is needed,
+           the HAL_GPIO_EXTI_Callback could be implemented in the user file
+        */
+    }
+    ```
+
+    所以，我们复制上方代码到`main.c`，并在其中调用`interruptHandler()`，示例如下：
+    ```c
+    // 不使用 __weak
+    void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+    {
+        switch (GPIO_Pin) {
+        case GPIO_PIN_0: {
+            SimpleButton_SB1.Methods.interruptHandler();
+            SimpleButton_SB2.Methods.interruptHandler();
+            break;
+        }
+        case GPIO_PIN_14: {
+            SimpleButton_SB3.Methods.interruptHandler();
+            break;
+        }
+        }
+    }
+    ```
+
+[回到目录](#目录)
+
+### 进阶功能
+
+---
+
 ## 衍生项目
 
 ### STM32
@@ -269,3 +434,6 @@ void simpleButton_Private_InitEXTI(
 ### CH32
 
 - [标准库-Kim-J-Smith/CH32-SimpleButton]()(敬请期待)
+
+
+[回到目录](#目录)

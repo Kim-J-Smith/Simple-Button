@@ -97,6 +97,8 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 #define SIMPLEBTN_TIME_REPEAT_WINDOW                    300
     // The cool-down time after you release the button.
 #define SIMPLEBTN_TIME_COOL_DOWN                        0
+    // The minimum time to push the button for long-push-hold.
+#define SIMPLEBTN_TIME_HOLD_PUSH_MIN                    SIMPLEBTN_TIME_LONG_PUSH_MIN
     // The interval time to call callback function in hold-long-push mode.
 #define SIMPLEBTN_TIME_HOLD_INTERVAL                    200
     // The timeout time for normal long button.
@@ -355,6 +357,13 @@ typedef struct simpleButton_Type_PublicBtnStatus_t {
     uint16_t                        longPushMinTime;
     uint16_t                        coolDownTime;
     uint16_t                        repeatWindowTime;
+
+ #if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
+
+    uint16_t                        holdPushMinTime;
+
+ #endif /* SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0 */
+
 #endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
 } simpleButton_Type_PublicBtnStatus_t;
 
@@ -416,6 +425,9 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitStruct(
     self->Public.coolDownTime = SIMPLEBTN_TIME_COOL_DOWN;
     self->Public.longPushMinTime = SIMPLEBTN_TIME_LONG_PUSH_MIN;
     self->Public.repeatWindowTime = SIMPLEBTN_TIME_REPEAT_WINDOW;
+ #if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
+    self->Public.holdPushMinTime = SIMPLEBTN_TIME_HOLD_PUSH_MIN;
+ #endif /* SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0 */
 #endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
 
 #if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
@@ -520,9 +532,9 @@ simpleButton_Private_StateWaitForEnd_Handler(
     } 
 #if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
  #if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME != 0
-    else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > SIMPLEBTN_TIME_LONG_PUSH_MIN)
+    else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > SIMPLEBTN_TIME_HOLD_PUSH_MIN)
  #else
-    else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > self->Public.longPushMinTime)
+    else if (SIMPLEBTN_FUNC_GET_TICK() - self->Private.timeStamp_interrupt > self->Public.holdPushMinTime)
  #endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME != 0 */
     {
         self->Private.timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();

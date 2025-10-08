@@ -610,7 +610,7 @@ int main(void) {
 
     /* 初始化之后配置可调时间 */
     SimpleButton_SB1.Public.longPushMinTime = 5000; // 最小长按时间改为5秒
-    SimpleButton_SB1.Public.coolDownTime = 1000； // 冷却时间改为1秒
+    SimpleButton_SB1.Public.coolDownTime = 1000; // 冷却时间改为1秒
     SimpleButton_SB1.Public.repeatWindowTime = 0; // 不进行双击/多击判定
 
     while (1) {

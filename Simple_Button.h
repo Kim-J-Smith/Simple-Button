@@ -73,7 +73,7 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
     /* for example: HAL_GetTick() */
 
 #define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc) \
-    /* for example: do { Error_Handler(ErrorNum); } while (1) */
+    /* for example: do { Error_Handler(ErrorNum); } while (1) */ /* only used in DEBUG mode */
 
 #define SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN() \
     /* for example: __disable_irq() */

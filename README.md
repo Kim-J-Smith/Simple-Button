@@ -19,11 +19,15 @@
         - [Step 2](#step-2)
 
 - [Advanced features](#advanced-features)
-    - [Timer Long Push]()
-    - [Counter Pepeat Push]()
-    - [Long Push Hold]()
-    - [Button Combination]()
-    - [Low Power]()
+    - [Timer Long Push](#timer-long-push)
+    - [Counter Pepeat Push](#counter-repeat-push)
+    - [Long Push Hold](#long-push-hold)
+    - [Button Combination](#button-combinations)
+    - [Low Power](#low-power)
+    - [Adjustable Time]()
+    - [Namespace]()
+
+- [Low Power Design](#low-power-design)
 
 - [Derivative Projects](#derivative-project)
 
@@ -41,7 +45,7 @@
 
 - 1. **Comprehensive Feature** - "Comprehensive" means: at least supporting *short press, long press, timer long press, double push, counter multiple push, combination buttons, and long press hold*.
 - 2. **Simple Deployment** - "Simple" means: providing only __ONE__ interface for creating buttons, and one line of code can register(create) a button statically.
-- 3. **Use State Machine** - The purpose is: To achieve non-blocking debouncing while having high scalability and a clear hierarchical structure.
+- 3. **Use State Machine** - The purpose is: To achieve non-blocking debouncing while having high scalability and a clear hierarchical structure. Different from similar [lwbtn](https://github.com/MaJerle/lwbtn) that incident reporting mechanism, although the traditional state machine will lead to state sort is more, but easy to debug and add a new state.
 - 4. **Use EXTI** - The purpose is: Using interrupts instead of polling is beneficial for *low power consumption* support.
 
 - So, after comprehensive consideration, I chose to **use C language macros to simulate the generation of functions similar to C++ templates**. Users only need to use the provided template to create a button object (which is actually a structure and three functions) with just one line of code.
@@ -434,6 +438,222 @@ int main(void) {
 ---
 
 ## Advanced Features
+
+### Timer Long Push
+- Sometimes, a single long press is not enough for our needs, and we want different long presses to have different effects. This is where you need to use an advanced feature called **timer long push**.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH 0` to `#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH 1` to enable **timer long push**.
+- With this feature enabled, the button's long-press callback will **no longer have a no-parameter, no-return type, but a `uint32_t`, no-return type**, which will take the duration of the long-press.
+- Here's an example (the initialization function, interrupt handling, and short press/double click callbacks do not make any special changes here and are omitted without demonstration) :
+```c
+/* Macro definition needs to be changed at Mode-Set at the beginning of the file to enable timed long presses */
+#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH           1
+
+/* Prepare the long-press callback with arguments */
+void TimerLongPush_CallBack(uint32_t pushTime) {
+    if (pushTime < 5000) {
+    /* Long press less than 5 seconds function 1 */
+    } else {
+    /* Long press for 5 seconds or more 2 */
+    }
+}
+
+int main(void) {
+    /* ... */
+    while (1) {
+        SimpleButton_SB1.Methods.asynchronousHandler(
+            NULL,
+            TimerLongPush_CallBack,
+            NULL
+        );
+    }
+}
+
+/* ... */
+
+```
+
+### Counter Repeat Push
+- Sometimes, a simple double click doesn't fit our needs. We might need three, four... In this case, we need to enable the **Counter Repeat Push** feature.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH 0` to `#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH 1 `to enable **Counter Repeat Push**.
+- With this feature enabled, the **no-parameter, no-return double-click callback function for a button will become a no-return function with a `uint8_t` parameter**, which takes the actual number of presses. So what was passed into the double-click callback function is actually passed into the counting multi-click callback function.
+- Here's an example (the initialization function, interrupt handling, and short press/long press callbacks do not change here, so they are omitted without demonstration) :
+```c
+/* Need to change macro definition at Mode-Set at the beginning of the file to enable counting multi-clicks */
+#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH       1
+
+/* Get ready to count multi-click callbacks (instead of the original double-click callback) */
+void CounterRepeatPush_CallBack(uint8_t pushTime) {
+    switch (pushTime) {
+    case 2:
+        /* ... */
+        break;
+    case 3:
+        /*... */
+        break;
+    case 4:
+        /*... */
+        break;
+
+    case 10:
+        /*... */
+        break;
+    default:
+        break;
+    }
+}
+
+int main(void) {
+    /*... */
+    while (1) {
+        SimpleButton_SB1.Methods.asynchronousHandler(
+            NULL,
+            NULL,
+            CounterRepeatPush_CallBack
+        );
+    }
+}
+
+```
+
+### Long Push Hold
+- Sometimes we want a function to fire intermittently and continuously after a button press. This is where **Long Push Hold** comes in.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD 0` to `#define SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD 1`to enable **Long Push Hold**.
+- With this feature enabled, the incoming long press callback function remains empty (if you also enable [timer long push](#timer-long-push), it will have a `uint32_t` argument just like normal **timer long push**), the only difference is that the function will be called periodically for as long as you keep pressing the button.
+- The example is omitted because the user code has not changed, only the callback timing has changed.
+
+### Button Combinations
+- Sometimes we want a combination of buttons to do something completely new. This is where **button combinations** come in.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 0` to `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 1 `to enable **button combinations**.
+- The button combination in this project is` predecessor button `+` successor button `. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered.
+- button combinations are in order. `button A + button B` is A different combination from `button B + button A`.
+- Neither the `predecessor` nor the `successor` button will trigger their short press, long press/timed long press/hold, double click/count multi-click callbacks **after the button combination fires**. (**But if the [keep-long-press](# keep-long-press) mode is enabled and the keep-long-press callback is triggered before the buttonstroke is triggered, the buttonstroke will not work!!**)
+- While composite button callbacks don't pass asynchronous handlers as arguments, **async handlers can't be missing**.
+- Here's an example (the initialization function, interrupt handling, short press/long press/multi-click callbacks do not change here, so they are omitted without demonstration) :
+```c
+/* Macro definition needs to be changed at Mode-Set at the beginning of the file to enable button combinations */
+#define SIMPLEBTN_MODE_ENABLE_COMBINATION               1
+
+// Press SB1 then SB2 callback function
+void Cmb_SB1_then_SB2_CallBack(void) {
+    /*... */
+}
+
+// Press SB2 then SB1's callback function
+void Cmb_SB2_then_SB1_CallBack(void) {
+    /*... */
+}
+
+int main(void) {
+    /* Initialize first, otherwise data will be overwritten */
+
+    /* Configure composite buttons after initialization */
+
+    // SB2 prepend SB1 and configure the SB1 --> SB2 combo callback
+    SimpleButton_SB2.Public.combinationConfig.previousButton = &SimpleButton_SB1;
+    SimpleButton_SB2.Public.combinationConfig.callBack = Cmb_SB1_then_SB2_CallBack;
+
+    // SB1 prepend SB2 and configure the SB2 --> SB1 combo callback
+    SimpleButton_SB1.Public.combinationConfig.previousButton = &SimpleButton_SB2;
+    SimpleButton_SB1.Public.combinationConfig.callBack = Cmb_SB2_then_SB1_CallBack;
+
+    while (1) {
+        SimpleButton_SB1.Methods.asynchronousHandler(
+            NULL,
+            NULL,
+            NULL
+        );
+        SimpleButton_SB2.Methods.asynchronousHandler(
+            NULL,
+            NULL,
+            NULL
+        );
+    }
+}
+
+```
+
+### Low Power
+- CPU idling makes no sense when buttons are not pressed. At this point, the **low-power** mode can be entered.
+- This project provides a macro function `SIMPLEBTN__START_LOWPOWER` (C99 + or C++11 + only) that determines if all buttons are idle and enters lowpower mode. **One line of code enters lowpower**.
+- **Low power support is a core design motivation for this project**, which is covered in detail in [Low Power Design](#low-power-design).
+- A simple example is as follows (no special changes are made to initialization, async handlers, interrupt handlers, etc.) :
+```c
+/*... */
+
+int main(void) {
+    /*... */
+
+    while (1) {
+        if ( /* all else allowed, enter low power */ ) {
+            // This is a variadic macro, passing in all button objects
+            SIMPLEBTN__START_LOWPOWER(SimpleButton_SB1, SimpleButton_SB2, SimpleButton_SB3);
+        }
+    }
+}
+
+/*... */
+
+```
+
+### Adjustable time
+- There are many important "**decision times**" in this project, such as: minimum long press time, window time for multiple clicks, button cooldown time... Maybe you need to configure different **decision times** for different buttons, in which case, you need to use the **adjustable time** feature.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME 1` to `#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME 0`, to enable **adjustable time**. (**Note! It is turned on when it is 0. Usually enabled by default**)
+- The following is an example (no special changes are made to initialization, async handlers, interrupt handlers, etc.) :
+```c
+
+/* Need to change macro definition value at Mode-Set at the beginning of file to enable adjustable time */
+#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0
+
+int main(void) {
+    /*... */
+    /* Initialize first, otherwise data will be overwritten */
+
+    /* Configure adjustable time after initialization */
+    SimpleButton_SB1.Public.longPushMinTime = 5000;  // Min press time changed to 5 seconds
+    SimpleButton_SB1.Public.coolDownTime = 1000; // cooldown changed to 1 second
+    SimpleButton_SB1.Public.repeatWindowTime = 0;  // No double/multiple clicks
+
+    while (1) {
+        /*... */
+    }
+}
+
+/*... */
+
+```
+
+### Name prefixes/namespaces
+- Sometimes we don't want to use the `SimpleButton_` prefix and need to define a custom one. This is easily achieved with **name prefixes/namespaces**.
+- Just find the `Namespace` in `CUSTOMIZATION` at the top of the file, Just change `#define SIMPLEBTN_NAMESPACE SimpleButton_` to the custom prefix you need.
+- Here is an example of `#define SIMPLEBTN_NAMESPACE SB_` :
+```c
+// Find the 'Namespace' in 'CUSTOMIZATION' at the top of the file and modify the following macro
+#define SIMPLEBTN_NAMESPACE                             SB_
+
+// Suppose the name of the case is myButton when creating the button in SIMPLEBTN__CREATE().
+
+int main(void) {
+    // Initialize the button with SB_myButton_Init() instead of SimpleButton_myButton_Init()
+    SB_myButton_Init();
+
+    while (1) {
+        // Call the asynchronous handler with SB_myButton instead of SimpleButton_myButton
+        SB_myButton.Methods.asynchronousHandler(...) ;
+    }
+}
+
+void EXTI0_IRQHandler(void) {
+    // Call the interrupt handler with SB_myButton instead of SimpleButton_myButton
+    SB_myButton.Methods.interruptHandler();
+}
+
+```
+
+[Back to Contents](#contents)
+
+---
+
+## Low Power Design
 
 [Back to Contents](#contents)
 

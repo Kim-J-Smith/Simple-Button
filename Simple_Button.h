@@ -978,11 +978,11 @@ simpleButton_Private_AsynchronousHandler(
 #if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) \
     || (defined(__cplusplus) && __cplusplus >= 201103L)
 
-SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_Type_Button_t self) {
-    return (self.Private.state == simpleButton_State_Wait_For_Interrupt);
+SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_Type_Button_t* self) {
+    return (self->Private.state == simpleButton_State_Wait_For_Interrupt);
 }
 
-#define SIMPLEBTN_ISIDLE_1(Btn)         simpleButton_Private_IsIdle(Btn)
+#define SIMPLEBTN_ISIDLE_1(Btn)         simpleButton_Private_IsIdle(&(Btn))
 
 #define SIMPLEBTN_ISIDLE_2(Btn, ...)    (SIMPLEBTN_ISIDLE_1(Btn) & SIMPLEBTN_ISIDLE_1(__VA_ARGS__))
 

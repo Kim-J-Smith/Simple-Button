@@ -18,6 +18,13 @@
         - [Step 1](#step-1)
         - [Step 2](#step-2)
 
+- [Advanced features](#advanced-features)
+    - [Timer Long Push]()
+    - [Counter Pepeat Push]()
+    - [Long Push Hold]()
+    - [Button Combination]()
+    - [Low Power]()
+
 - [Derivative Projects](#derivative-project)
 
 ---
@@ -26,12 +33,16 @@
 
 ### Brief instruction of design
 
-- Buttons are the simplest, most common and most effective input in embedded design. Nowadays, there are already quite a few mature open-source button projects on GitHub. However, I still found many problems that these projects haven't solved, which led me to have the idea of creating my own button project. This project should have the following characteristics:
+- Buttons are the simplest, most common, and most effective input in embedded design. There are quite a few mature open source projects with buttons on GitHub today, but I still see a lot of problems that these projects don't address: *Some projects don't support long-hold buttons, some don't support multi-click buttons, some don't support low power, and some have complex API*. (**The lack of low power support is a consequence of the project's use of polling instead of interrupts!**)
+
+- There are a lot of projects that use polling because it has a natural advantage: users only need to implement the `Read_Pin()` functional interface to use polling, which is very portable; But polling comes with a natural drawback: the CPU must be working all the time to keep scanning, **which is the natural contradiction of low power** !
+
+- I got the idea to make my own non-polling button project. The project should have the following characteristics:
 
 - 1. **Comprehensive Feature** - "Comprehensive" means: at least supporting *short press, long press, timer long press, double push, counter multiple push, combination buttons, and long press hold*.
-- 2. **Simple Deployment** - "Simple" means: providing only ONE interface for creating buttons, and one line of code can register(create) a button statically.
+- 2. **Simple Deployment** - "Simple" means: providing only __ONE__ interface for creating buttons, and one line of code can register(create) a button statically.
 - 3. **Use State Machine** - The purpose is: To achieve non-blocking debouncing while having high scalability and a clear hierarchical structure.
-- 4. **Use EXTI** - The purpose is: Using interrupts instead of polling is beneficial for * low power consumption * support.
+- 4. **Use EXTI** - The purpose is: Using interrupts instead of polling is beneficial for *low power consumption* support.
 
 - So, after comprehensive consideration, I chose to **use C language macros to simulate the generation of functions similar to C++ templates**. Users only need to use the provided template to create a button object (which is actually a structure and three functions) with just one line of code.
 
@@ -261,7 +272,170 @@ void simpleButton_Private_InitEXTI(
 
 #### Step 2
 
+0. Buttons can be created with **a single macro**. But in real projects we often want to have a single `.c` file to manage all the buttons we need and a `.h` file to use as an interface. The two API macros provided by this project can well complete the `create` + `declare` two work. The typical project directory structure is **the one used in steps 2.1-2.5 below** :
+```markdown
+.
+|
++-- Simple_Button.h  # The only file provided by this project.
+|
++-- my_buttons.c  # User's file, in where buttons will be created.
+|
++-- my_buttons.h  # User's file, in where buttons will be declared.
+|
++-- main.c  # User's file, importing "my_buttons.h", and using the buttons.
 
+```
+
+1. Use the **SIMPLEBTN__CREATE()** macro to create the required buttons. Create three buttons and connect them respectively to `GPIOA-Pin0`, `GPIOB-Pin0`, and `GPIOD-Pin14`, all triggered by the falling edge. Name them respectively as `SB1`, `SB2`, and `SB3`. The STM32-HAL example is as follows (the following code is located at `my_buttons.c`) :
+```c
+#include "Simple_Button.h"
+
+/* no ';' after Macro */
+
+SIMPLEBTN__CREATE(GPIOA_BASE, GPIO_PIN_0, EXTI_TRIGGER_FALLING, SB1)
+
+SIMPLEBTN__CREATE(GPIOB_BASE, GPIO_PIN_0, EXTI_TRIGGER_FALLING, SB2)
+
+SIMPLEBTN__CREATE(GPIOD_BASE, GPIO_PIN_14, EXTI_TRIGGER_FALLING, SB3)
+
+```
+
+2. The button created using the **SIMPLEBTN__DECLARE()** macro declaration (if used in another file). Following the three buttons created in 2.1, here demonstrates how to declare the three created buttons in `my_buttons.`
+```c
+#include "Simple_Button.h"
+
+/* no ';' after Macro */
+
+SIMPLEBTN__DECLARE(SB1)
+
+SIMPLEBTN__DECLARE(SB2)
+
+SIMPLEBTN__DECLARE(SB3)
+
+```
+
+3. The button initializers are called before the `while` loop in the `main` function. Following up on the previous step, here's an example:
+```c
+#include "my_buttons.h"
+
+int main(void) {
+
+    SimpleButton_SB1_Init();
+    SimpleButton_SB2_Init();
+    SimpleButton_SB3_Init();
+
+    while (1) {
+
+    }
+}
+
+```
+
+4. Call the button asynchronous handler inside the `while` loop. Following up from the previous step, prepare `short press`, `long press`, and `double click` callbacks (see [Advanced features](#advanced-features) for more features), and pass in a `while` loop that handles buttons asynchronically, as shown in the following example (the following code is located in `main.c`) :
+```c
+#include "my_buttons.h"
+
+/* Prepare the callback functions for 'short press', 'long press', and 'double-click'. By default, they have no parameters and no return values */
+void TurnOn_LED(void) {
+    /* The function name is arbitrary, as long as it has no parameters and no return */
+    /* The function will be called after the corresponding event is triggered */
+}
+
+void DoSomething(void) {
+    /* ... */
+}
+
+int main(void) {
+
+    SimpleButton_SB1_Init();
+    SimpleButton_SB2_Init();
+    SimpleButton_SB3_Init();
+
+    while (1) {
+        //Pass the 'short press', 'long press', 'double click' callback function in turn, or NULL or 0 if not needed.
+        SimpleButton_SB1.Methods.asynchronousHandler(
+            TurnOn_LED,
+            NULL,
+            DoSomething
+        );
+        SimpleButton_SB2.Methods.asynchronousHandler(
+            NULL,
+            NULL,
+            DoSomething
+        );
+        SimpleButton_SB3.Methods.asynchronousHandler(
+            NULL,
+            DoSomething,
+            NULL
+        );
+    }
+}
+
+```
+
+5. The final step is to call the button interrupt handling function in the EXTI interrupt function. Here, it is divided into two situations: 1. **You need to implement the interrupt function yourself**. 2. **There are already ready-made interrupt callback functions** (for example, the HAL library of STM32 uses CubeMX to generate code). Here are some examples to illustrate:
+
+    - **You need to implement the interrupt function yourself**. Most single-chip microcomputer bare-metal development requires this to be done. Go to the assembly startup file to find the `Interrupt Vector Table`, then locate the interrupt corresponding to the EXTI pin and implement the interrupt function. Continuing from the previous step, taking the STM32 standard library as an example:
+
+    ```c
+        // SB1, SB2 ----- Pin0
+        void EXTI0_IRQHandler(void) {
+            if (EXTI_GetITStatus(EXTI_Line0) == SET) {
+                SimpleButton_SB1.Methods.interruptHandler();
+                SimpleButton_SB2.Methods.interruptHandler();
+
+                EXTI_ClearITPendingBit(EXTI_Line0);
+            }
+        }
+
+        // SB3 ----- Pin14
+        void EXTI15_10_IRQHandler(void) {
+            if (EXTI_GetITStatus(EXTI_Line14) == SET) {
+                SimpleButton_SB3.Methods.interruptHandler();
+
+                EXTI_ClearITPendingBit(EXTI_Line14);
+            }
+        }
+    ```
+
+    - **There are already interrupt callbacks out there**. Just find the generated callback and call `interruptHandler()` from there. Following up on the previous step, using the HAL library generated by STM32 CubeMX as an example, `stm32f1xx_hal_gpio.c` provides this weak functional interface:
+    ```c
+    __weak void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+    {
+        /* Prevent unused argument(s) compilation warning */
+        UNUSED(GPIO_Pin);
+        /* NOTE: This function Should not be modified, when the callback is needed,
+           the HAL_GPIO_EXTI_Callback could be implemented in the user file
+        */
+    }
+    ```
+
+    So, let's copy the code above to `main.c` and call `interruptHandler()` there, like so:
+    ```c
+    // no __weak
+    void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+    {
+        switch (GPIO_Pin) {
+        case GPIO_PIN_0: {
+            SimpleButton_SB1.Methods.interruptHandler();
+            SimpleButton_SB2.Methods.interruptHandler();
+            break;
+        }
+        case GPIO_PIN_14: {
+            SimpleButton_SB3.Methods.interruptHandler();
+            break;
+        }
+        }
+    }
+    ```
+
+[Back to Contents](#contents)
+
+---
+
+## Advanced Features
+
+[Back to Contents](#contents)
 
 ---
 

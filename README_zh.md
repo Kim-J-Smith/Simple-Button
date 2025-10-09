@@ -628,6 +628,7 @@ int main(void) {
 - 有的时候我们希望不使用`SimpleButton_`这个前缀，需要自定义前缀。这通过**名称前缀/命名空间**可以很轻松实现。
 - 只需要在文件开头的`CUSTOMIZATION`中找到`Namespace`，将`#define SIMPLEBTN_NAMESPACE                             SimpleButton_`改为您需要的自定义前缀即可。
 - 此处以`#define SIMPLEBTN_NAMESPACE                             SB_`举例：
+
 ```c
 // 文件开头的`CUSTOMIZATION`中找到`Namespace`，修改以下宏
 #define SIMPLEBTN_NAMESPACE                             SB_
@@ -661,7 +662,7 @@ void EXTI0_IRQHandler(void) {
 
 stateDiagram-v2
 
-    classDef Begin_Point_State fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:black
+    classDef Begin_Point_State fill: #8dbfe0ff,stroke:#0369a1,stroke-width:2px,color:black
     class Wait_For_Interrupt Begin_Point_State
     
     %% 核心状态转换流程
@@ -681,9 +682,6 @@ stateDiagram-v2
 
     Wait_For_End --> Combination_WaitForEnd: **后置按键**被按下
 
-    classDef processState fill:#1f2937,stroke:#9ca3af,stroke-width:2px,color:white
-    class Combination processState
-
     state Combination {
         Combination_WaitForEnd
         Combination_Release
@@ -696,7 +694,7 @@ stateDiagram-v2
 
     Release_Delay --> Combination_Push: **后置按键**被按下
     Combination_Push --> Cool_Down: 执行 组合键 回调
-    
+
     state Hold {
         Hold_Push
         Hold_Release

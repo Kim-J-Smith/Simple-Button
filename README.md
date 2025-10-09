@@ -24,8 +24,10 @@
     - [Long Push Hold](#long-push-hold)
     - [Button Combination](#button-combinations)
     - [Low Power](#low-power)
-    - [Adjustable Time]()
-    - [Namespace]()
+    - [Adjustable Time](#adjustable-time)
+    - [Namespace](#name-prefixesnamespaces)
+
+- [State Machine Graph](#state-machine-graph)
 
 - [Low Power Design](#low-power-design)
 
@@ -266,8 +268,8 @@ void simpleButton_Private_InitEXTI(
     }
     HAL_NVIC_SetPriority(
         the_exti_IRQ, 
-        KIM_BUTTON_NVIC_EXTI_PreemptionPriority,
-        KIM_BUTTON_NVIC_EXTI_SubPriority
+        EXTI_PreemptionPriority, /* your priority */
+        EXTI_SubPriority /* your priority */
     );
     HAL_NVIC_EnableIRQ(the_exti_IRQ);
 
@@ -653,7 +655,112 @@ void EXTI0_IRQHandler(void) {
 
 ---
 
+## State Machine Graph
+
+```mermaid
+
+stateDiagram-v2
+
+    classDef Begin_Point_State fill: #8dbfe0ff,stroke:#0369a1,stroke-width:2px,color:black
+    class Wait_For_Interrupt Begin_Point_State
+    
+    %% Core States
+    Wait_For_Interrupt --> Push_Delay: EXTI trigger
+    Push_Delay --> Wait_For_End: Delay
+    Push_Delay --> Wait_For_Interrupt: **Found to be a false trigger**
+    Wait_For_End --> Release_Delay: Release button
+    Release_Delay --> Wait_For_End: **Found didn't release**
+    Release_Delay --> Wait_For_Repeat: **Confirm release**
+    Wait_For_Repeat --> Repeat_Push: Push again
+    Wait_For_Repeat --> Single_Push: repeat-push-window timeout
+    Repeat_Push --> Cool_Down: do repeat-callback
+    Single_Push --> Cool_Down: do single-callback
+    Cool_Down --> Wait_For_Interrupt: cool down over
+    
+    %% Comination Button 
+
+    Wait_For_End --> Combination_WaitForEnd: **next button** is pushed down
+
+    state Combination {
+        Combination_WaitForEnd
+        Combination_Release
+        Combination_Push
+    }
+
+    Combination_WaitForEnd --> Combination_Release: release
+    Combination_Release --> Combination_WaitForEnd: Reconfirm release failed
+    Combination_Release --> Cool_Down: Reconfirm release success
+
+    Release_Delay --> Combination_Push: **next button** is pushed down
+    Combination_Push --> Cool_Down: do combination_callback
+    
+    state Hold {
+        Hold_Push
+        Hold_Release
+    }
+
+    Wait_For_End --> Hold_Push: time reached
+    Hold_Push --> Hold_Release: release button
+    Hold_Release --> Hold_Push: Reconfirm release failed
+    Hold_Release --> Cool_Down: Reconfirm release success
+
+    Wait_For_End --> Wait_For_Interrupt: safe-time timeout
+    Combination_WaitForEnd --> Wait_For_Interrupt: safe-time timeout
+    
+    note left of Wait_For_Interrupt
+        Wait for interrupt
+        Idle
+    end note
+
+```
+
+[Back to Contents](#contents)
+
+---
+
 ## Low Power Design
+
+- Low power consumption is the main objective of this project design: Using external interrupts instead of polling provides natural interrupt support. 
+
+- When all the buttons are inactive, a function like `__WFI()` can be used to stop the CPU's clock and enter a low-power mode. When a button is pressed and an external interrupt is triggered, the button will be awakened. 
+
+- This project provides the `SIMPLEBTN__START_LOWPOWER(...)` function for directly accessing the low-power interface. The usage method has been described in the [Low Power] section (#low-power). 
+
+- `__WFI()` is undoubtedly the simplest function for entering low-power mode, but doing so may not yield the exact results one expects. Here are some suggestions for achieving low power consumption: 
+
+1. Before entering the low-power mode, it is recommended to configure all I/O as pull-up/pull-down inputs or analog inputs to prevent floating of the chip I/O and the generation of leakage current. [1]
+
+
+2. For the small package type of chips, compared to the largest package, the unconnected pins should be configured as pull-up/pull-down inputs or analog inputs; otherwise, it may affect the current indicators. [1]
+
+
+3. Release the SWD debugging interface and configure it as a GPIO function. It should be set as an input with pull-up/pull-down or as an analog input (the SWD function will be restored after wake-up). [1]
+
+
+4. It is recommended to completely turn off all unnecessary peripherals before entering the low-power mode. If conditions permit, disable the PLL switching to a lower-speed clock to save energy. 
+
+[1]: Refer to https://github.com/openwch/ch32_application_notes 
+
+5. Therefore, you may need to customize the `SIMPLEBTN_FUNC_START_LOW_POWER()` macro interface, which will be called by `SIMPLEBTN__START_LOWPOWER(...)`. The pseudo-code example is as follows:
+```c
+// Find this macro at Other-Functions at the beginning of file.
+#define SIMPLEBTN_FUNC_START_LOW_POWER()    simpleButton_start_low_power()
+
+static inline void simpleButton_start_low_power(void) {
+    config_GPIO_IPD_for_low_power();
+    Disable_SWD();
+    Disable_some_Periph();
+    Disable_PLL();
+
+    __WFI();
+
+    Enable_PLL();
+    Enable_some_Periph();
+    Enable_SWD();
+    config_GPIO_normal();
+}
+
+```
 
 [Back to Contents](#contents)
 
@@ -663,7 +770,7 @@ void EXTI0_IRQHandler(void) {
 
 ### STM32
 
-- [HAL-Kim-J-Smith/STM32-SimpleButton]()(coming soon)
+- [HAL-Kim-J-Smith/STM32-SimpleButton](https://github.com/Kim-J-Smith/STM32-SimpleButton)
 
 ### CH32
 

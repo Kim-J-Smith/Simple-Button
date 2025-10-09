@@ -27,6 +27,8 @@
     - [可调时间](#可调时间)
     - [名称前缀/命名空间](#名称前缀命名空间)
 
+- [状态机图解](#状态机图解)
+
 - [低功耗设计](#低功耗设计)
 
 - [衍生项目](#衍生项目)
@@ -266,8 +268,8 @@ void simpleButton_Private_InitEXTI(
     }
     HAL_NVIC_SetPriority(
         the_exti_IRQ, 
-        KIM_BUTTON_NVIC_EXTI_PreemptionPriority,
-        KIM_BUTTON_NVIC_EXTI_SubPriority
+        EXTI_PreemptionPriority, /* your priority */
+        EXTI_SubPriority /* your priority */
     );
     HAL_NVIC_EnableIRQ(the_exti_IRQ);
 
@@ -626,6 +628,7 @@ int main(void) {
 - 有的时候我们希望不使用`SimpleButton_`这个前缀，需要自定义前缀。这通过**名称前缀/命名空间**可以很轻松实现。
 - 只需要在文件开头的`CUSTOMIZATION`中找到`Namespace`，将`#define SIMPLEBTN_NAMESPACE                             SimpleButton_`改为您需要的自定义前缀即可。
 - 此处以`#define SIMPLEBTN_NAMESPACE                             SB_`举例：
+
 ```c
 // 文件开头的`CUSTOMIZATION`中找到`Namespace`，修改以下宏
 #define SIMPLEBTN_NAMESPACE                             SB_
@@ -653,7 +656,111 @@ void EXTI0_IRQHandler(void) {
 
 ---
 
+## 状态机图解
+
+```mermaid
+
+stateDiagram-v2
+
+    classDef Begin_Point_State fill: #8dbfe0ff,stroke:#0369a1,stroke-width:2px,color:black
+    class Wait_For_Interrupt Begin_Point_State
+    
+    %% 核心状态转换流程
+    Wait_For_Interrupt --> Push_Delay: 中断触发(引脚电平变化)
+    Push_Delay --> Wait_For_End: **确认按下**
+    Push_Delay --> Wait_For_Interrupt: **发现是误触发**
+    Wait_For_End --> Release_Delay: 引脚释放
+    Release_Delay --> Wait_For_End: **发现没有释放**
+    Release_Delay --> Wait_For_Repeat: **确认释放**
+    Wait_For_Repeat --> Repeat_Push: 内再次按下
+    Wait_For_Repeat --> Single_Push: 超过窗口时间
+    Repeat_Push --> Cool_Down: 执行 双击/计数多击 回调
+    Single_Push --> Cool_Down: 执行 短按、长按/计时长按 回调
+    Cool_Down --> Wait_For_Interrupt: 冷却时间结束
+    
+    %% 组合键状态转换（可选）
+
+    Wait_For_End --> Combination_WaitForEnd: **后置按键**被按下
+
+    state Combination {
+        Combination_WaitForEnd
+        Combination_Release
+        Combination_Push
+    }
+
+    Combination_WaitForEnd --> Combination_Release: 释放
+    Combination_Release --> Combination_WaitForEnd: 二次确认释放失败
+    Combination_Release --> Cool_Down: 二次确认释放成功
+
+    Release_Delay --> Combination_Push: **后置按键**被按下
+    Combination_Push --> Cool_Down: 执行 组合键 回调
+
+    state Hold {
+        Hold_Push
+        Hold_Release
+    }
+
+    Wait_For_End --> Hold_Push: 达到保持判定时间
+    Hold_Push --> Hold_Release: 释放按键
+    Hold_Release --> Hold_Push: 二次确认释放失败
+    Hold_Release --> Cool_Down: 二次确认释放成功
+
+    %% 错误处理/安全机制
+    Wait_For_End --> Wait_For_Interrupt: 超过安全时限
+    Combination_WaitForEnd --> Wait_For_Interrupt: 超过安全时限
+    
+    %% 状态说明
+    note left of Wait_For_Interrupt
+        初始/空闲状态
+        等待中断触发
+    end note
+
+```
+
+[回到目录](#目录)
+
+---
+
 ## 低功耗设计
+
+- 低功耗是本项目设计的主要目的：使用外部中断而非轮询带来了天然的中断支持。
+
+- 当所有按键都闲置时，可以使用类似`__WFI()`之类的函数让CPU的时钟停止，进入低功耗模式。当按键被按下，触发外部中断时，按键会被唤醒。
+
+- 本项目提供了`SIMPLEBTN__START_LOWPOWER(...)`一键进入低功耗接口，使用方法已在[低功耗](#低功耗)给出。
+
+- `__WFI()`固然是最简单的进入低功耗的函数，但这样做可能效果并不能完全达到预期，此处提供一些低功耗建议：
+
+    1. 在进入低功耗模式前，建议将所有 I/O 配置成为上拉/下拉输入或模拟输入，防止芯片 I/O 浮空产生漏电流。[1]
+
+    2. 对于芯片小封装型号，相较最大封装，未封装出的引脚，建议配置为上拉/下拉输入或模拟输入，否则可能影响电流指标。[1]
+
+    3. 释放SWD 调试接口作为GPIO功能,并配置为上拉/下拉输入或模拟输入(唤醒后恢复SWD功能)。[1]
+
+    4. 建议在进入低功耗模式前，彻底关闭不需要使用的外设。如果条件允许，关闭PLL切换低速时钟以节能。
+
+[1]: 参考 https://github.com/openwch/ch32_application_notes
+
+- 因此，您可能需要定制`SIMPLEBTN_FUNC_START_LOW_POWER()`这个宏接口，它会被`SIMPLEBTN__START_LOWPOWER(...)`调用。伪代码示例如下：
+```c
+// 在文件开头的 Other-Functions 处找到它
+#define SIMPLEBTN_FUNC_START_LOW_POWER()    simpleButton_start_low_power()
+
+static inline void simpleButton_start_low_power(void) {
+    config_GPIO_IPD_for_low_power();
+    Disable_SWD();
+    Disable_some_Periph();
+    Disable_PLL();
+
+    __WFI();
+
+    Enable_PLL();
+    Enable_some_Periph();
+    Enable_SWD();
+    config_GPIO_normal();
+}
+
+```
 
 [回到目录](#目录)
 
@@ -663,7 +770,7 @@ void EXTI0_IRQHandler(void) {
 
 ### STM32
 
-- [HAL库-Kim-J-Smith/STM32-SimpleButton]()(敬请期待)
+- [HAL库-Kim-J-Smith/STM32-SimpleButton](https://github.com/Kim-J-Smith/STM32-SimpleButton)
 
 ### CH32
 

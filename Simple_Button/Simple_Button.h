@@ -329,7 +329,7 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitButton(
         interruptHandler
     );
 
-    simpleButton_Private_InitEXTI(
+    SIMPLEBTN_FUNC_INIT_EXTI(
         GPIOX_BASE,
         GPIO_Pin_X,
         EXTI_Trigger_X

@@ -20,15 +20,6 @@
 #define     SIMPLEBUTTON_CONFIG_H__     0011L
 #include <stdint.h>
 
-// Macro for force-inline
-#if defined(__GNUC__) || defined(__clang__)
- #define SIMPLEBTN_FORCE_INLINE static inline __attribute__((always_inline))
-#elif defined(_MSC_VER) || defined(__CC_ARM)
- #define SIMPLEBTN_FORCE_INLINE static __forceinline
-#else
- #define SIMPLEBTN_FORCE_INLINE static inline
-#endif
-
 /** @p ================================================================ **/
 /* ====================== CUSTOMIZATION BEGIN ========================== */
 
@@ -147,6 +138,25 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 /** @b ================================================================ **/
 /** @b Initialization-Function */
 
+/* This macro just forward the parameter to another function */
+#define SIMPLEBTN_FUNC_INIT_EXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) \
+    simpleButton_Private_InitEXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X)
+
+/* ====================== CUSTOMIZATION END ============================ */
+/** @p ================================================================ **/
+
+
+// Macro for force-inline
+#if defined(__GNUC__) || defined(__clang__)
+ #define SIMPLEBTN_FORCE_INLINE static inline __attribute__((always_inline))
+#elif defined(_MSC_VER) || defined(__CC_ARM)
+ #define SIMPLEBTN_FORCE_INLINE static __forceinline
+#else
+ #define SIMPLEBTN_FORCE_INLINE static inline
+#endif
+
+/* ================ OTHER LOCAL-PLATFORM CUSTOMIZATION ================= */
+
 SIMPLEBTN_FORCE_INLINE
 void simpleButton_Private_InitEXTI(
     simpleButton_Type_GPIOBase_t    GPIOX_Base,
@@ -160,13 +170,6 @@ void simpleButton_Private_InitEXTI(
     (void)GPIO_Pin_X;
     (void)EXTI_Trigger_X;
 }
-
-
-/* ====================== CUSTOMIZATION END ============================ */
-/** @p ================================================================ **/
-
-
-/* ================ OTHER LOCAL-PLATFORM CUSTOMIZATION ================= */
 
 /**
  * User can do more things in this place.

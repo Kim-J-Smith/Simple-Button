@@ -102,6 +102,7 @@
 #### 步骤1
 
 1. 在文件`simple_button_config.h`开头的 **Head-File** 添加芯片头文件。添加的头文件取决于具体的芯片。下方以STM32F103C8T6的HAL库举例：
+
 ```c
 /** @b ================================================================ **/
 /** @b Head-File */
@@ -111,6 +112,7 @@
 ```
 
 2. 在文件`simple_button_config.h`开头的 **Simple-Button-Type** 调整类型定义。这些类型根据具体芯片不同进行调整。例如有的芯片的GPIO_Pin_x 的类型不是`uint16_t`，而是`GPIOPin_TypeDef`，就要对下方类型进行更改。同时，应当完善`SIMPLEBTN_EXTI_TRIGGER_FALLING`的定义，补上您使用的芯片的`EXTI_TRIGGER_FALLING`值即可。
+
 ```c
 /** @b ================================================================ **/
 /** @b Simple-Button-Type */
@@ -130,6 +132,7 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 ```
 
 3. 在文件`simple_button_config.h`开头的 **Other-Functions** 实现抽象接口。示例已在代码注释中给出，不再赘述。
+
 ```c
 /** @b ================================================================ **/
 /** @b Other-Functions */
@@ -154,6 +157,7 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 ```
 
 4. 在文件`simple_button_config.h`开头的 **Initialization-Function** 实现EXTI初始化函数。此处给出STM32 HAL库示例：
+
 ```c
 /** @b ================================================================ **/
 /** @b Initialization-Function */
@@ -295,6 +299,7 @@ void simpleButton_Private_InitEXTI(
 ```
 
 1. 使用 **SIMPLEBTN__CREATE()** 宏 创建需要的按键。创建3个按键，分别连接`GPIOA-Pin0`, `GPIOB-Pin0`, `GPIOD-Pin14`，都是下降沿触发，分别起名为`SB1`, `SB2`, `SB3`，STM32-HAL示例如下（以下代码位于`my_buttons.c`）：
+
 ```c
 #include "Simple_Button.h"
 
@@ -309,6 +314,7 @@ SIMPLEBTN__CREATE(GPIOD_BASE, GPIO_PIN_14, EXTI_TRIGGER_FALLING, SB3)
 ```
 
 2. 使用 **SIMPLEBTN__DECLARE()** 宏 声明创建的按键（如果在另一个文件使用）。承接2.1创建的三个按键，这里演示如何在 `my_buttons.h` 中声明三个已创建的按键。
+
 ```c
 #include "Simple_Button.h"
 
@@ -323,6 +329,7 @@ SIMPLEBTN__DECLARE(SB3)
 ```
 
 3. 在`main`函数`while`循环之前调用按键初始化函数。承接前一步，示例如下：
+
 ```c
 #include "my_buttons.h"
 
@@ -340,6 +347,7 @@ int main(void) {
 ```
 
 4. 在`while`循环内调用按键异步处理函数。承接上一步，准备好`短按`、`长按`、`双击`的回调函数（更多功能的用法详见[进阶功能](#进阶功能)），并传入`while`循环内按键异步处理函数，示例如下（以下代码位于`main.c`）：
+
 ```c
 #include "my_buttons.h"
 
@@ -407,6 +415,7 @@ int main(void) {
     ```
 
     - **已经有现成的中断回调函数**。直接找到生成好的回调函数，在其中调用`interruptHandler()`即可。承接上一步，以STM32 CubeMX生成的HAL库为例，在`stm32f1xx_hal_gpio.c`里提供了这个弱函数接口：
+
     ```c
     __weak void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
@@ -419,6 +428,7 @@ int main(void) {
     ```
 
     所以，我们复制上方代码到`main.c`，并在其中调用`interruptHandler()`，示例如下：
+
     ```c
     // 不使用 __weak
     void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -448,6 +458,7 @@ int main(void) {
 - 在文件`simple_button_config.h`开头的`CUSTOMIZATION`中找到`Mode-Set`，将`#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH           0`改为`#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH           1`，即可启用**计时长按**。
 - 启用此功能后，按键的长按回调函数将**不再是无参无返回值类型，变为有`uint32_t`参数而无返回值的类型**，该类型接收的值为长按时间。
 - 示例如下（初始化函数、中断处理、短按/双击回调在此处没有特殊变化，省略不演示）：
+
 ```c
 /* 需要在文件`simple_button_config.h`开头的 Mode-Set 处改变宏定义的值以启用计时长按 */
 #define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH           1
@@ -481,6 +492,7 @@ int main(void) {
 - 在文件`simple_button_config.h`开头的`CUSTOMIZATION`中找到`Mode-Set`，将`#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH       0`改为`#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH       1`，即可启用**计数多击**。
 - 启用此功能后，按键的**无参无返回值双击回调函数会变为有`uint8_t`参数且无返回值的函数**，此参数接收实际按下的次数。所以原先传入双击回调函数的地方实际上就变成了传入计数多击回调函数。
 - 示例如下（初始化函数、中断处理、短按/长按回调在此处没有特殊变化，省略不演示）：
+
 ```c
 /* 需要在文件`simple_button_config.h`开头的 Mode-Set 处改变宏定义的值以启用计数多击 */
 #define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH       1
@@ -534,6 +546,7 @@ int main(void) {
 - 在组合键**触发后**，`前驱按键`与`后继按键`都不会触发它们的短按、长按/计时长按/长按保持、双击/计数多击回调函数。（**但在组合键触发前，如果启用了[长按保持](#长按保持)模式并先触发了长按保持回调，组合键将不会生效！！**）
 - 组合键回调函数虽然不会以参数形式传入异步处理函数，但**异步处理函数不能缺失**。
 - 示例如下（初始化函数、中断处理、短按/长按/多击回调在此处没有特殊变化，省略不演示）：
+
 ```c
 /* 需要在文件`simple_button_config.h`开头的 Mode-Set 处改变宏定义的值以启用组合键 */
 #define SIMPLEBTN_MODE_ENABLE_COMBINATION               1
@@ -582,6 +595,7 @@ int main(void) {
 - 本项目提供一个判断所有按键都处于空闲状态并进入低功耗模式的宏函数`SIMPLEBTN__START_LOWPOWER`（C99及以上或C++11及以上才提供），**一行代码进入低功耗**。
 - **低功耗支持是本项目的核心设计动机**，这将在[低功耗设计](#低功耗设计)中详细展开。
 - 简单示例如下（初始化、异步处理函数、中断处理函数等没有特殊变化，此处省略不演示）：
+
 ```c
 /* ... */
 int main(void) {
@@ -603,6 +617,7 @@ int main(void) {
 - 本项目有许多重要的“**判定时间**”，例如：最短的长按时间、多击的窗口时间、按键的冷却时间…… 也许您需要为不同的按键配置不同的**判定时间**，这时，你就需要使用**可调时间**功能。
 - 在文件`simple_button_config.h`开头的`CUSTOMIZATION`中找到`Mode-Set`，将`#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         1`改为`#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0`，即可启用**可调时间**。（**注意！是为0时开启。一般是默认开启**）
 - 示例如下（初始化、异步处理函数、中断处理函数等没有特殊变化，此处省略不演示）：
+
 ```c
 
 /* 需要在文件`simple_button_config.h`开头的 Mode-Set 处改变宏定义的值以启用可调时间 */
@@ -674,7 +689,7 @@ stateDiagram-v2
     Wait_For_End --> Release_Delay: 引脚释放
     Release_Delay --> Wait_For_End: **发现没有释放**
     Release_Delay --> Wait_For_Repeat: **确认释放**
-    Wait_For_Repeat --> Repeat_Push: 窗口内内再次按下
+    Wait_For_Repeat --> Repeat_Push: 窗口内再次按下
     Wait_For_Repeat --> Single_Push: 超过窗口时间
     Repeat_Push --> Cool_Down: 执行 双击/计数多击 回调
     Single_Push --> Cool_Down: 执行 短按、长按/计时长按 回调
@@ -744,6 +759,7 @@ stateDiagram-v2
 [1]: 参考 https://github.com/openwch/ch32_application_notes
 
 - 因此，您可能需要定制`SIMPLEBTN_FUNC_START_LOW_POWER()`这个宏接口，它会被`SIMPLEBTN__START_LOWPOWER(...)`调用。伪代码示例如下：
+
 ```c
 // 在文件`simple_button_config.h`开头的 Other-Functions 处找到它
 #define SIMPLEBTN_FUNC_START_LOW_POWER()    simpleButton_start_low_power()

@@ -84,11 +84,11 @@
 
 - As this project is a cross-platform one, all its interfaces are abstract, or in other words: all interfaces need to be customized by the user according to the chip being used. From this perspective, this project is merely a "half-finished product". If you prefer to use it directly out of the box, you can take a look at the customized version of the chip you need in the [Derivative Project](#derivative-project). If so, you can directly download it, skip step 1 and proceed directly to step 2.
 
-- **Step 1**: You need to customize the transformation for your chip:
-    - 1.1 - Add head file in **Head-File** at the beginning of the file.
-    - 1.2 - **Simple-Button-Type** adjusts the type definition at the beginning of the file.
-    - 1.3 - **Other-Functions** implement the abstract interface at the top of the file.
-    - 1.4 - Implement the EXTI Initialization Function in the **Initialization-Function** at the beginning of the file.
+- **Step 1**: You need to customize the transformation for your chip(do step 1 in `simple_button_config.h`):
+    - 1.1 - Add head file in **Head-File** at the beginning of the file `simple_button_config.h`.
+    - 1.2 - **Simple-Button-Type** adjusts the type definition at the beginning of the file `simple_button_config.h`.
+    - 1.3 - **Other-Functions** implement the abstract interface at the top of the file `simple_button_config.h`.
+    - 1.4 - Implement the EXTI Initialization Function in the **Initialization-Function** at the beginning of the file `simple_button_config.h`.
 
 - **Step 2**: Use project to create and use button: (**[]** represents optional step)
     - 2.1 - Use the **SIMPLEBTN__CREATE()** macro to create the required buttons.
@@ -101,7 +101,7 @@
 
 #### Step 1
 
-1. Add head file in **Head-File** at the beginning of the file. The added header files depend on the specific chip. The following takes the HAL library of STM32F103C8T6 as an example:
+1. Add head file in **Head-File** at the beginning of the file `simple_button_config.h`. The added header files depend on the specific chip. The following takes the HAL library of STM32F103C8T6 as an example:
 ```c
 /** @b ================================================================ **/
 /** @b Head-File */
@@ -110,7 +110,7 @@
 
 ```
 
-2. Adjust the type definition at the **Simple-Button-Type** at the beginning of the file. These types are adjusted according to the specific chips. For instance, if the type of GPIO_Pin_x on some chips is not `uint16_t` but `GPIOPin_TypeDef`, the type below needs to be changed. Meanwhile, the definition of `SIMPLEBTN_EXTI_TRIGGER_FALLING` should be refined by adding the `EXTI_TRIGGER_FALLING` value of the chip you are using.
+2. Adjust the type definition at the **Simple-Button-Type** at the beginning of the file `simple_button_config.h`. These types are adjusted according to the specific chips. For instance, if the type of GPIO_Pin_x on some chips is not `uint16_t` but `GPIOPin_TypeDef`, the type below needs to be changed. Meanwhile, the definition of `SIMPLEBTN_EXTI_TRIGGER_FALLING` should be refined by adding the `EXTI_TRIGGER_FALLING` value of the chip you are using.
 ```c
 /** @b ================================================================ **/
 /** @b Simple-Button-Type */
@@ -129,7 +129,7 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 
 ```
 
-3. Implement the abstract interface at the **Other-Functions** at the beginning of the file. The examples have been provided in the code comments and will not be repeated here.
+3. Implement the abstract interface at the **Other-Functions** at the beginning of the file `simple_button_config.h`. The examples have been provided in the code comments and will not be repeated here.
 ```c
 /** @b ================================================================ **/
 /** @b Other-Functions */
@@ -153,7 +153,7 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
     /* for example: __WFI() */
 ```
 
-4. Implement the EXTI Initialization Function in the **Initialization-Function** at the beginning of the file. Here is an example of the STM32 HAL library:
+4. Implement the EXTI Initialization Function in the **Initialization-Function** at the beginning of the file `simple_button_config.h`. Here is an example of the STM32 HAL library:
 ```c
 /** @b ================================================================ **/
 /** @b Initialization-Function */
@@ -282,7 +282,9 @@ void simpleButton_Private_InitEXTI(
 ```markdown
 .
 |
-+-- Simple_Button.h  # The only file provided by this project.
++-- simple_button_config.h  # The header file provided by this project is responsible for providing configuration information
+|
++-- Simple_Button.h  # The main file provided by this project.
 |
 +-- my_buttons.c  # User's file, in where buttons will be created.
 |
@@ -443,11 +445,11 @@ int main(void) {
 
 ### Timer Long Push
 - Sometimes, a single long press is not enough for our needs, and we want different long presses to have different effects. This is where you need to use an advanced feature called **timer long push**.
-- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH 0` to `#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH 1` to enable **timer long push**.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH 0` to `#define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH 1` to enable **timer long push**.
 - With this feature enabled, the button's long-press callback will **no longer have a no-parameter, no-return type, but a `uint32_t`, no-return type**, which will take the duration of the long-press.
 - Here's an example (the initialization function, interrupt handling, and short press/double click callbacks do not make any special changes here and are omitted without demonstration) :
 ```c
-/* Macro definition needs to be changed at Mode-Set at the beginning of the file to enable timed long presses */
+/* Macro definition needs to be changed at Mode-Set at the beginning of the file `simple_button_config.h` to enable timed long presses */
 #define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH           1
 
 /* Prepare the long-press callback with arguments */
@@ -476,11 +478,11 @@ int main(void) {
 
 ### Counter Repeat Push
 - Sometimes, a simple double click doesn't fit our needs. We might need three, four... In this case, we need to enable the **Counter Repeat Push** feature.
-- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH 0` to `#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH 1 `to enable **Counter Repeat Push**.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH 0` to `#define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH 1 `to enable **Counter Repeat Push**.
 - With this feature enabled, the **no-parameter, no-return double-click callback function for a button will become a no-return function with a `uint8_t` parameter**, which takes the actual number of presses. So what was passed into the double-click callback function is actually passed into the counting multi-click callback function.
 - Here's an example (the initialization function, interrupt handling, and short press/long press callbacks do not change here, so they are omitted without demonstration) :
 ```c
-/* Need to change macro definition at Mode-Set at the beginning of the file to enable counting multi-clicks */
+/* Need to change macro definition at Mode-Set at the beginning of the file `simple_button_config.h` to enable counting multi-clicks */
 #define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH       1
 
 /* Get ready to count multi-click callbacks (instead of the original double-click callback) */
@@ -519,20 +521,20 @@ int main(void) {
 
 ### Long Push Hold
 - Sometimes we want a function to fire intermittently and continuously after a button press. This is where **Long Push Hold** comes in.
-- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD 0` to `#define SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD 1`to enable **Long Push Hold**.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD 0` to `#define SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD 1`to enable **Long Push Hold**.
 - With this feature enabled, the incoming long press callback function remains empty (if you also enable [timer long push](#timer-long-push), it will have a `uint32_t` argument just like normal **timer long push**), the only difference is that the function will be called periodically for as long as you keep pressing the button.
 - The example is omitted because the user code has not changed, only the callback timing has changed.
 
 ### Button Combinations
 - Sometimes we want a combination of buttons to do something completely new. This is where **button combinations** come in.
-- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 0` to `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 1 `to enable **button combinations**.
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 0` to `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 1 `to enable **button combinations**.
 - The button combination in this project is` predecessor button `+` successor button `. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered.
 - button combinations are in order. `button A + button B` is A different combination from `button B + button A`.
 - Neither the `predecessor` nor the `successor` button will trigger their short press, long press/timed long press/hold, double click/count multi-click callbacks **after the button combination fires**. (**But if the [keep-long-press](# keep-long-press) mode is enabled and the keep-long-press callback is triggered before the buttonstroke is triggered, the buttonstroke will not work!!**)
 - While composite button callbacks don't pass asynchronous handlers as arguments, **async handlers can't be missing**.
 - Here's an example (the initialization function, interrupt handling, short press/long press/multi-click callbacks do not change here, so they are omitted without demonstration) :
 ```c
-/* Macro definition needs to be changed at Mode-Set at the beginning of the file to enable button combinations */
+/* Macro definition needs to be changed at Mode-Set at the beginning of the file `simple_button_config.h` to enable button combinations */
 #define SIMPLEBTN_MODE_ENABLE_COMBINATION               1
 
 // Press SB1 then SB2 callback function
@@ -599,11 +601,11 @@ int main(void) {
 
 ### Adjustable time
 - There are many important "**decision times**" in this project, such as: minimum long press time, window time for multiple clicks, button cooldown time... Maybe you need to configure different **decision times** for different buttons, in which case, you need to use the **adjustable time** feature.
-- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file, Change `#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME 1` to `#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME 0`, to enable **adjustable time**. (**Note! It is turned on when it is 0. Usually enabled by default**)
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME 1` to `#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME 0`, to enable **adjustable time**. (**Note! It is turned on when it is 0. Usually enabled by default**)
 - The following is an example (no special changes are made to initialization, async handlers, interrupt handlers, etc.) :
 ```c
 
-/* Need to change macro definition value at Mode-Set at the beginning of file to enable adjustable time */
+/* Need to change macro definition value at Mode-Set at the beginning of file `simple_button_config.h` to enable adjustable time */
 #define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0
 
 int main(void) {
@@ -626,10 +628,10 @@ int main(void) {
 
 ### Name prefixes/namespaces
 - Sometimes we don't want to use the `SimpleButton_` prefix and need to define a custom one. This is easily achieved with **name prefixes/namespaces**.
-- Just find the `Namespace` in `CUSTOMIZATION` at the top of the file, Just change `#define SIMPLEBTN_NAMESPACE SimpleButton_` to the custom prefix you need.
+- Just find the `Namespace` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Just change `#define SIMPLEBTN_NAMESPACE SimpleButton_` to the custom prefix you need.
 - Here is an example of `#define SIMPLEBTN_NAMESPACE SB_` :
 ```c
-// Find the 'Namespace' in 'CUSTOMIZATION' at the top of the file and modify the following macro
+// Find the 'Namespace' in 'CUSTOMIZATION' at the top of the file `simple_button_config.h` and modify the following macro
 #define SIMPLEBTN_NAMESPACE                             SB_
 
 // Suppose the name of the case is myButton when creating the button in SIMPLEBTN__CREATE().

@@ -841,6 +841,9 @@ int main(void) {
 }
 ```
 
+- **Dynamic buttons can also and must be passed in `SIMPLEBTN__START_LOWPOWER(...)` along with the `EXTI` button.** Whether the dynamic button is idle is an important basis for judging whether to enter the low-power mode, so the dynamic button must be passed in. It is only because dynamic button pressing cannot trigger interrupts independently that the CPU cannot be awakened from low-power mode.
+
+
 [Back to Contents](#contents)
 
 ---

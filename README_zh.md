@@ -31,6 +31,8 @@
 
 - [低功耗设计](#低功耗设计)
 
+- [动态按键](#动态按键)
+
 - [衍生项目](#衍生项目)
 
 ---
@@ -288,7 +290,9 @@ void simpleButton_Private_InitEXTI(
 |
 +-- simple_button_config.h  # 本项目提供的头文件，负责提供配置信息
 |
-+-- Simple_Button.h  # 本项目提供的主要文件
++-- Simple_Button.h  # 本项目提供的主要头文件
+|
++-- Simple_Button.c  # 本项目提供的主要源文件
 |
 +-- my_buttons.c  # 用户自己的文件，所有按键在这个文件内创建，统一管理。
 |
@@ -789,6 +793,54 @@ static inline void simpleButton_start_low_power(void) {
     config_GPIO_normal();
 }
 
+```
+
+[回到目录](#目录)
+
+---
+
+## 动态按键
+
+- 有的时候，我们需要动态地创建按键，又或者我们需要同时使用`PA0`与`PB0`这类相同拥有相同编号的引脚作为按键引脚。本项目主要提供的基于`EXTI`的按键恐怕难以胜任。
+
+- 为此，本项目提供了**动态按键**，一个基于轮询的按键子项目，作为补充。
+
+- **动态按键**复用了**基于`EXTI`按键**的状态机函数及所有配置信息，所以不会产生额外的开销。
+
+- **动态按键**使用轮询，配置起来简单，且没有数量和引脚限制，但无法靠自身唤醒处于低功耗的CPU。但**动态按键**可以作为*组合键*的`后继按键`使用，`前驱按键`使用**基于`EXTI`按键**即可兼顾低功耗和便捷性。
+
+- **动态按键**使用以`SimpleButton_DynamicButton_`开头的函数进行管理。
+
+- 创建示例如下（以STM32 HAL为例）：
+
+```c
+int main(void) {
+    SimpleButton_Type_DynamicBtn_t myButton;
+    SimpleButton_DynamicButton_Init(
+        &myButton, // 动态按键对象的地址
+        GPIOB_BASE, // 引脚的GPIO地址，这里使用的GPIOB
+        GPIO_PIN_0, // 引脚号
+        1 // 未被按下时的引脚电平，此处为1表示空闲状态引脚为高电平
+    );
+}
+```
+
+- **动态按键同样支持全部的进阶功能**，使用方法参考[进阶功能](#进阶功能)。
+
+- 按键使用示例如下（创建过程省略不演示）：
+
+```c
+int main(void) {
+    // ...
+    while (1) {
+        SimpleButton_DynamicButton_Handler(
+            &myButton, // 动态按键对象的地址
+            shortPushCallBack, // 短按回调函数
+            longPushCallBack, // 长按回调函数
+            repeatPushCallBack // 双击/多击回调函数
+        );
+    }
+}
 ```
 
 [回到目录](#目录)

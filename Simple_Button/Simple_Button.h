@@ -22,8 +22,8 @@
 /* Incldue the config file of Simple_Button and check the version */
 #include    "simple_button_config.h"
 #if SIMPLEBUTTON_CONFIG_H__ != SIMPLEBUTTON_H__
- #warning [Simple-Button] : the version of "simple_button_config.h" \
-        is different from it of "Simple_Button.h".
+ #warning [Simple-Button] : the version of "simple_button_config.h"\
+ is different from it of "Simple_Button.h".
 #endif /* SIMPLEBUTTON_CONFIG_H__ != SIMPLEBUTTON_H__ */
 
 /* ============== Private-Use Macro / Type / Function ================= */
@@ -242,7 +242,17 @@ typedef struct simpleButton_Type_Button_t {
 
 } simpleButton_Type_Button_t;
 
-typedef struct simpleButton_Type_DynamicBtn_t {
+/**
+ * @typedef     SimpleButton_Type_DynamicBtn_t
+ * 
+ * @brief       This is a public type for user to define a button dynamically.
+ * 
+ * @note        These buttons are not triggered by EXTI but polling.
+ *              User should use `SimpleButton_DynamicBtn_xxx` to deal with these buttons.
+ * 
+ *              see <../README.md/#dynamic-button> for more details.
+ */
+typedef struct SimpleButton_Type_DynamicBtn_t {
     simpleButton_Type_GPIOBase_t    GPIO_Base;
 
     simpleButton_Type_GPIOPin_t     GPIO_Pin;
@@ -252,7 +262,7 @@ typedef struct simpleButton_Type_DynamicBtn_t {
     simpleButton_Type_PrivateBtnStatus_t Private;
 
     simpleButton_Type_PublicBtnStatus_t Public;
-} simpleButton_Type_DynamicBtn_t;
+} SimpleButton_Type_DynamicBtn_t;
 
 
 
@@ -561,7 +571,7 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
 
 SIMPLEBTN_C_API void
 SimpleButton_DynamicButton_Init(
-    simpleButton_Type_DynamicBtn_t* const self,
+    SimpleButton_Type_DynamicBtn_t* const self,
     simpleButton_Type_GPIOBase_t    GPIO_Base,
     simpleButton_Type_GPIOPin_t     GPIO_Pin,
     simpleButton_Type_GPIOPinVal_t  normalPinVal
@@ -569,7 +579,7 @@ SimpleButton_DynamicButton_Init(
 
 SIMPLEBTN_C_API void
 SimpleButton_DynamicButton_Handler(
-    simpleButton_Type_DynamicBtn_t* const self,
+    SimpleButton_Type_DynamicBtn_t* const self,
     simpleButton_Type_ShortPushCallBack_t shortPushCallBack,
     simpleButton_Type_LongPushCallBack_t longPushCallBack,
     simpleButton_Type_RepeatPushCallBack_t repeatPushCallBack

@@ -31,6 +31,8 @@
 
 - [Low Power Design](#low-power-design)
 
+- [Dynamic Button](#dynamic-button)
+
 - [Derivative Projects](#derivative-project)
 
 ---
@@ -288,7 +290,9 @@ void simpleButton_Private_InitEXTI(
 |
 +-- simple_button_config.h  # The header file provided by this project is responsible for providing configuration information
 |
-+-- Simple_Button.h  # The main file provided by this project.
++-- Simple_Button.h  # The main header file provided by this project.
+|
++-- Simple_Button.c  # The main source file provided by this project.
 |
 +-- my_buttons.c  # User's file, in where buttons will be created.
 |
@@ -548,7 +552,7 @@ int main(void) {
 ### Button Combinations
 - Sometimes we want a combination of buttons to do something completely new. This is where **button combinations** come in.
 - Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 0` to `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 1 `to enable **button combinations**.
-- The button combination in this project is` predecessor button `+` successor button `. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered.
+- The button combination in this project is `predecessor button` + `successor(next) button`. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered.
 - button combinations are in order. `button A + button B` is A different combination from `button B + button A`.
 - Neither the `predecessor` nor the `successor` button will trigger their short press, long press/timed long press/hold, double click/count multi-click callbacks **after the button combination fires**. (**But if the [keep-long-press](# keep-long-press) mode is enabled and the keep-long-press callback is triggered before the buttonstroke is triggered, the buttonstroke will not work!!**)
 - While composite button callbacks don't pass asynchronous handlers as arguments, **async handlers can't be missing**.
@@ -787,6 +791,54 @@ static inline void simpleButton_start_low_power(void) {
     config_GPIO_normal();
 }
 
+```
+
+[Back to Contents](#contents)
+
+---
+
+## Dynamic Button
+
+- Sometimes, we need to create buttons dynamically, or we need to use pins with the same number like `PA0` and `PB0` as button pins. The main `EXTI` based buttons provided by this project may not be adequate.
+
+- To solve this problem, the project provides **Dynamic button**, a polling based button subproject, as a supplement.
+
+- **Dynamic button** reuse state machine functions and all configuration information **based on `EXTI` button**, so there is no extra overhead.
+
+- **Dynamic button** use polling, which is easy to configure and has no number or pin limit, but cannot wake up a CPU on low power by itself. However, **dynamic buttons** can be used as `successor(next) button` to **button combinations**, and **Exti-based buttons** can be used as `predecessor button` for both low power consumption and convenience.
+
+- **Dynamic buttons** are managed using functions that start with `SimpleButton_DynamicButton_`.
+
+- Create the following example (STM32 HAL as an example) :
+
+```c
+int main(void) {
+    SimpleButton_Type_DynamicBtn_t myButton;
+    SimpleButton_DynamicButton_Init(
+        &myButton, // Address of dynamic button object
+        GPIOB_BASE, // the GPIO address of the pin, GPIOB is used here
+        GPIO_PIN_0, // pin number
+        1 // unpressed pin level, here 1 means idle pin is high
+    );
+}
+```
+
+- **Dynamic buttons also support all advanced features**, see [advanced features](#advanced-features) for instructions.
+
+- An example of button usage is as follows (creation is omitted without demonstration) :
+
+```c
+int main(void) {
+    //...
+    while (1) {
+        SimpleButton_DynamicButton_Handler(
+            &myButton, // Address of dynamic button object
+            shortPushCallBack, //
+            longPushCallBack, // Long press callback function
+            repeatPushCallBack // Double-click/multi-click callback functions
+        );
+    }
+}
 ```
 
 [Back to Contents](#contents)

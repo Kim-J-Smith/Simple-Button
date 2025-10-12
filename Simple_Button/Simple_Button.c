@@ -513,9 +513,20 @@ simpleButton_Private_AsynchronousHandler(
     SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
 }
 
+/**
+ * @brief           Initialize the dynamic-button.
+ * 
+ * @param[inout]    self - The pointer of dynamic-button object.
+ * @param[in]       GPIO_Base - The base address of the GPIO port 
+ *                  connected to the button.
+ * @param[in]       GPIO_Pin - The GPIO Pin number connected to the button.
+ * @param[in]       normalPinVal - Normal(didn't push) pin value of button pin. (can be 1 or 0)
+ * 
+ * @return          None
+ */
 SIMPLEBTN_C_API void
 SimpleButton_DynamicButton_Init(
-    simpleButton_Type_DynamicBtn_t* const self,
+    SimpleButton_Type_DynamicBtn_t* const self,
     simpleButton_Type_GPIOBase_t    GPIO_Base,
     simpleButton_Type_GPIOPin_t     GPIO_Pin,
     simpleButton_Type_GPIOPinVal_t  normalPinVal
@@ -535,7 +546,7 @@ SimpleButton_DynamicButton_Init(
 
 SIMPLEBTN_FORCE_INLINE void
 simpleButton_Private_DynamicBtn_CheckState(
-    simpleButton_Type_DynamicBtn_t* const self
+    SimpleButton_Type_DynamicBtn_t* const self
 ) {
     SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN(); /* critical section begin */
 
@@ -556,9 +567,19 @@ simpleButton_Private_DynamicBtn_CheckState(
     SIMPLEBTN_FUNC_CRITICAL_SECTION_END(); /* critical section end */
 }
 
+/**
+ * @brief           Handler of dynamic-button.
+ * 
+ * @param[inout]    self - The pointer of dynamic-button object.
+ * @param[in]       shortPushCallBack - callback function for short push.
+ * @param[in]       longPushCallBack - callback function for long push.
+ * @param[in]       repeatPushCallBack - callback function for repeat push.
+ * 
+ * @return          None
+ */
 SIMPLEBTN_C_API void
 SimpleButton_DynamicButton_Handler(
-    simpleButton_Type_DynamicBtn_t* const self,
+    SimpleButton_Type_DynamicBtn_t* const self,
     simpleButton_Type_ShortPushCallBack_t shortPushCallBack,
     simpleButton_Type_LongPushCallBack_t longPushCallBack,
     simpleButton_Type_RepeatPushCallBack_t repeatPushCallBack

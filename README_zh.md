@@ -31,6 +31,8 @@
 
 - [低功耗设计](#低功耗设计)
 
+- [动态按键](#动态按键)
+
 - [衍生项目](#衍生项目)
 
 ---
@@ -66,7 +68,7 @@
 
 4. ✅ **异步处理**： 回调函数异步处理，减小中断停留时间。
 
-5. ✅ **二次确认**： 本项目对引脚触发信号进行二次确认，从而支持 GPIOX 相同编号引脚同时作为按键引脚，无需担心外部中断冲突。
+5. ✅ **二次确认**： 本项目对引脚触发信号进行二次确认，即使在供电环境不稳定的场景下也能保证稳定。
 
 6. ✅ **自定义按键**： 本项目支持对每个按键单独设置*长按判定最小时间、多击窗口时间、冷却时间*，方便按键自定义。
 
@@ -288,7 +290,9 @@ void simpleButton_Private_InitEXTI(
 |
 +-- simple_button_config.h  # 本项目提供的头文件，负责提供配置信息
 |
-+-- Simple_Button.h  # 本项目提供的主要文件
++-- Simple_Button.h  # 本项目提供的主要头文件
+|
++-- Simple_Button.c  # 本项目提供的主要源文件
 |
 +-- my_buttons.c  # 用户自己的文件，所有按键在这个文件内创建，统一管理。
 |
@@ -298,7 +302,7 @@ void simpleButton_Private_InitEXTI(
 
 ```
 
-1. 使用 **SIMPLEBTN__CREATE()** 宏 创建需要的按键。创建3个按键，分别连接`GPIOA-Pin0`, `GPIOB-Pin0`, `GPIOD-Pin14`，都是下降沿触发，分别起名为`SB1`, `SB2`, `SB3`，STM32-HAL示例如下（以下代码位于`my_buttons.c`）：
+1. 使用 **SIMPLEBTN__CREATE()** 宏 创建需要的按键。创建3个按键，分别连接`GPIOA-Pin0`, `GPIOB-Pin1`, `GPIOD-Pin14`，都是下降沿触发，分别起名为`SB1`, `SB2`, `SB3`，STM32-HAL示例如下（以下代码位于`my_buttons.c`）：
 
 ```c
 #include "Simple_Button.h"
@@ -307,7 +311,7 @@ void simpleButton_Private_InitEXTI(
 
 SIMPLEBTN__CREATE(GPIOA_BASE, GPIO_PIN_0, EXTI_TRIGGER_FALLING, SB1)
 
-SIMPLEBTN__CREATE(GPIOB_BASE, GPIO_PIN_0, EXTI_TRIGGER_FALLING, SB2)
+SIMPLEBTN__CREATE(GPIOB_BASE, GPIO_PIN_1, EXTI_TRIGGER_FALLING, SB2)
 
 SIMPLEBTN__CREATE(GPIOD_BASE, GPIO_PIN_14, EXTI_TRIGGER_FALLING, SB3)
 
@@ -394,13 +398,21 @@ int main(void) {
     - **需要自己去实现中断函数**。大多数单片机裸机开发都需要这样做。去汇编启动文件中找到`中断向量表`，然后找到EXTI对应引脚的中断，实现中断函数。依旧承接上一步，以 STM32 标准库为例：
 
     ```c
-        // SB1 与 SB2 都是Pin0
+        // SB1 是 Pin0
         void EXTI0_IRQHandler(void) {
             if (EXTI_GetITStatus(EXTI_Line0) == SET) {
                 SimpleButton_SB1.Methods.interruptHandler();
-                SimpleButton_SB2.Methods.interruptHandler();
 
                 EXTI_ClearITPendingBit(EXTI_Line0);
+            }
+        }
+
+        // SB2 是 Pin1
+        void EXTI1_IRQHandler(void) {
+            if (EXTI_GetITStatus(EXTI_Line1) == SET) {
+                SimpleButton_SB2.Methods.interruptHandler();
+
+                EXTI_ClearITPendingBit(EXTI_Line1);
             }
         }
 
@@ -436,6 +448,9 @@ int main(void) {
         switch (GPIO_Pin) {
         case GPIO_PIN_0: {
             SimpleButton_SB1.Methods.interruptHandler();
+            break;
+        }
+        case GPIO_PIN_1: {
             SimpleButton_SB2.Methods.interruptHandler();
             break;
         }
@@ -779,6 +794,57 @@ static inline void simpleButton_start_low_power(void) {
 }
 
 ```
+
+[回到目录](#目录)
+
+---
+
+## 动态按键
+
+- 有的时候，我们需要动态地创建按键，又或者我们需要同时使用`PA0`与`PB0`这类相同拥有相同编号的引脚作为按键引脚。本项目主要提供的基于`EXTI`的按键恐怕难以胜任。
+
+- 为此，本项目提供了**动态按键**，一个基于轮询的按键子项目，作为补充。
+
+- **动态按键**复用了**基于`EXTI`按键**的状态机函数及所有配置信息，所以不会产生额外的开销。
+
+- **动态按键**使用轮询，配置起来简单，且没有数量和引脚限制，但无法靠自身唤醒处于低功耗的CPU。但**动态按键**可以作为*组合键*的`后继按键`使用，`前驱按键`使用**基于`EXTI`按键**即可兼顾低功耗和便捷性。
+
+- **动态按键**使用以`SimpleButton_DynamicButton_`开头的函数进行管理。
+
+- 创建示例如下（以STM32 HAL为例）：
+
+```c
+int main(void) {
+    SimpleButton_Type_DynamicBtn_t myButton;
+    SimpleButton_DynamicButton_Init(
+        &myButton, // 动态按键对象的地址
+        GPIOB_BASE, // 引脚的GPIO地址，这里使用的GPIOB
+        GPIO_PIN_0, // 引脚号
+        1 // 未被按下时的引脚电平，此处为1表示空闲状态引脚为高电平
+    );
+}
+```
+
+- **动态按键同样支持全部的进阶功能**，使用方法参考[进阶功能](#进阶功能)。
+
+- 按键使用示例如下（创建过程省略不演示）：
+
+```c
+int main(void) {
+    // ...
+    while (1) {
+        SimpleButton_DynamicButton_Handler(
+            &myButton, // 动态按键对象的地址
+            shortPushCallBack, // 短按回调函数
+            longPushCallBack, // 长按回调函数
+            repeatPushCallBack // 双击/多击回调函数
+        );
+    }
+}
+```
+
+- **动态按键同样可以、也必须与`EXTI`按键一同传入`SIMPLEBTN__START_LOWPOWER(...)`中**。动态按键是否空闲是是否进入低功耗模式的重要判断依据，所以必须传入动态按键。只是由于动态按键不能触发中断，无法独立地将CPU从低功耗模式中唤醒。
+
 
 [回到目录](#目录)
 

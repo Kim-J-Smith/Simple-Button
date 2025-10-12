@@ -31,6 +31,8 @@
 
 - [Low Power Design](#low-power-design)
 
+- [Dynamic Button](#dynamic-button)
+
 - [Derivative Projects](#derivative-project)
 
 ---
@@ -66,7 +68,7 @@
 
 4. ✅ **Asynchronous Processing** : The callback function is processed asynchronously to reduce the interrupt dwell time.
 
-4. ✅ **Secondary Confirmation** : This project performs secondary confirmation on the pin trigger signal, thereby supporting pins who have the same number in GPIOX to be used as button pins simultaneously, eliminating concerns about external interrupt conflicts.
+4. ✅ **Secondary Confirmation** : This project performs secondary confirmation on the pin trigger signal, which can ensure stability even in scenarios with unstable power supply environments.
 
 5. ✅ **Adjustable Time** : This project supports setting the *minimum time for long press determination, multi-click window time, and cooldown time* for each button separately, making it convenient for button customization.
 
@@ -288,7 +290,9 @@ void simpleButton_Private_InitEXTI(
 |
 +-- simple_button_config.h  # The header file provided by this project is responsible for providing configuration information
 |
-+-- Simple_Button.h  # The main file provided by this project.
++-- Simple_Button.h  # The main header file provided by this project.
+|
++-- Simple_Button.c  # The main source file provided by this project.
 |
 +-- my_buttons.c  # User's file, in where buttons will be created.
 |
@@ -298,7 +302,7 @@ void simpleButton_Private_InitEXTI(
 
 ```
 
-1. Use the **SIMPLEBTN__CREATE()** macro to create the required buttons. Create three buttons and connect them respectively to `GPIOA-Pin0`, `GPIOB-Pin0`, and `GPIOD-Pin14`, all triggered by the falling edge. Name them respectively as `SB1`, `SB2`, and `SB3`. The STM32-HAL example is as follows (the following code is located at `my_buttons.c`) :
+1. Use the **SIMPLEBTN__CREATE()** macro to create the required buttons. Create three buttons and connect them respectively to `GPIOA-Pin0`, `GPIOB-Pin1`, and `GPIOD-Pin14`, all triggered by the falling edge. Name them respectively as `SB1`, `SB2`, and `SB3`. The STM32-HAL example is as follows (the following code is located at `my_buttons.c`) :
 
 ```c
 #include "Simple_Button.h"
@@ -307,7 +311,7 @@ void simpleButton_Private_InitEXTI(
 
 SIMPLEBTN__CREATE(GPIOA_BASE, GPIO_PIN_0, EXTI_TRIGGER_FALLING, SB1)
 
-SIMPLEBTN__CREATE(GPIOB_BASE, GPIO_PIN_0, EXTI_TRIGGER_FALLING, SB2)
+SIMPLEBTN__CREATE(GPIOB_BASE, GPIO_PIN_1, EXTI_TRIGGER_FALLING, SB2)
 
 SIMPLEBTN__CREATE(GPIOD_BASE, GPIO_PIN_14, EXTI_TRIGGER_FALLING, SB3)
 
@@ -394,13 +398,21 @@ int main(void) {
     - **You need to implement the interrupt function yourself**. Most single-chip microcomputer bare-metal development requires this to be done. Go to the assembly startup file to find the `Interrupt Vector Table`, then locate the interrupt corresponding to the EXTI pin and implement the interrupt function. Continuing from the previous step, taking the STM32 standard library as an example:
 
     ```c
-        // SB1, SB2 ----- Pin0
+        // SB1 ----- Pin0
         void EXTI0_IRQHandler(void) {
             if (EXTI_GetITStatus(EXTI_Line0) == SET) {
                 SimpleButton_SB1.Methods.interruptHandler();
-                SimpleButton_SB2.Methods.interruptHandler();
 
                 EXTI_ClearITPendingBit(EXTI_Line0);
+            }
+        }
+
+        // SB2 ----- Pin1
+        void EXTI1_IRQHandler(void) {
+            if (EXTI_GetITStatus(EXTI_Line1) == SET) {
+                SimpleButton_SB2.Methods.interruptHandler();
+
+                EXTI_ClearITPendingBit(EXTI_Line1);
             }
         }
 
@@ -540,7 +552,7 @@ int main(void) {
 ### Button Combinations
 - Sometimes we want a combination of buttons to do something completely new. This is where **button combinations** come in.
 - Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 0` to `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 1 `to enable **button combinations**.
-- The button combination in this project is` predecessor button `+` successor button `. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered.
+- The button combination in this project is `predecessor button` + `successor(next) button`. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered.
 - button combinations are in order. `button A + button B` is A different combination from `button B + button A`.
 - Neither the `predecessor` nor the `successor` button will trigger their short press, long press/timed long press/hold, double click/count multi-click callbacks **after the button combination fires**. (**But if the [keep-long-press](# keep-long-press) mode is enabled and the keep-long-press callback is triggered before the buttonstroke is triggered, the buttonstroke will not work!!**)
 - While composite button callbacks don't pass asynchronous handlers as arguments, **async handlers can't be missing**.
@@ -780,6 +792,57 @@ static inline void simpleButton_start_low_power(void) {
 }
 
 ```
+
+[Back to Contents](#contents)
+
+---
+
+## Dynamic Button
+
+- Sometimes, we need to create buttons dynamically, or we need to use pins with the same number like `PA0` and `PB0` as button pins. The main `EXTI` based buttons provided by this project may not be adequate.
+
+- To solve this problem, the project provides **Dynamic button**, a polling based button subproject, as a supplement.
+
+- **Dynamic button** reuse state machine functions and all configuration information **based on `EXTI` button**, so there is no extra overhead.
+
+- **Dynamic button** use polling, which is easy to configure and has no number or pin limit, but cannot wake up a CPU on low power by itself. However, **dynamic buttons** can be used as `successor(next) button` to **button combinations**, and **Exti-based buttons** can be used as `predecessor button` for both low power consumption and convenience.
+
+- **Dynamic buttons** are managed using functions that start with `SimpleButton_DynamicButton_`.
+
+- Create the following example (STM32 HAL as an example) :
+
+```c
+int main(void) {
+    SimpleButton_Type_DynamicBtn_t myButton;
+    SimpleButton_DynamicButton_Init(
+        &myButton, // Address of dynamic button object
+        GPIOB_BASE, // the GPIO address of the pin, GPIOB is used here
+        GPIO_PIN_0, // pin number
+        1 // unpressed pin level, here 1 means idle pin is high
+    );
+}
+```
+
+- **Dynamic buttons also support all advanced features**, see [advanced features](#advanced-features) for instructions.
+
+- An example of button usage is as follows (creation is omitted without demonstration) :
+
+```c
+int main(void) {
+    //...
+    while (1) {
+        SimpleButton_DynamicButton_Handler(
+            &myButton, // Address of dynamic button object
+            shortPushCallBack, //
+            longPushCallBack, // Long press callback function
+            repeatPushCallBack // Double-click/multi-click callback functions
+        );
+    }
+}
+```
+
+- **Dynamic buttons can also and must be passed in `SIMPLEBTN__START_LOWPOWER(...)` along with the `EXTI` button.** Whether the dynamic button is idle is an important basis for judging whether to enter the low-power mode, so the dynamic button must be passed in. It is only because dynamic button pressing cannot trigger interrupts independently that the CPU cannot be awakened from low-power mode.
+
 
 [Back to Contents](#contents)
 

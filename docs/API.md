@@ -15,6 +15,8 @@
 
 - All private variables start with `simpleButton_`
 
-- All custom types start with `simpleButton_Type_` and end with `_t`
+- All private custom types start with `simpleButton_Type_` and end with `_t`
+
+- All open custom types start with `SimpleButton_Type_` and end with `_t`
 
 - All state machine enums start with `simpleButton_State_`

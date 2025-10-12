@@ -15,7 +15,9 @@
 
 - 所有私有的变量使用 `simpleButton_` 开头
 
-- 所有自定义的类型使用 `simpleButton_Type_` 开头，且以 `_t` 结尾
+- 所有私有的自定义的类型使用 `simpleButton_Type_` 开头，且以 `_t` 结尾
+
+- 所有开放的自定义的类型使用 `SimpleButton_Type_` 开头，且以 `_t` 结尾
 
 - 所有状态机枚举使用 `simpleButton_State_` 开头
 

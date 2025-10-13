@@ -5,7 +5,7 @@
  * 
  * @brief           A template for the button is provided
  * 
- * @version         0.7.1 ( SIMPLEBUTTON_H__ == 0012L )
+ * @version         0.7.2 ( SIMPLEBUTTON_H__ == 0013L )
  * 
  * @date            2025-10-03
  * 
@@ -17,7 +17,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #ifndef     SIMPLEBUTTON_H__
-#define     SIMPLEBUTTON_H__    0012L
+#define     SIMPLEBUTTON_H__    0013L
 
 /* Incldue the config file of Simple_Button and check the version */
 #include    "simple_button_config.h"
@@ -201,7 +201,7 @@ typedef struct simpleButton_Type_PublicBtnStatus_t {
     simpleButton_Type_CmbBtnConfig_t combinationConfig;
 #endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
 
-#if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0
+#if SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0
 
  #if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
 
@@ -213,7 +213,7 @@ typedef struct simpleButton_Type_PublicBtnStatus_t {
     uint16_t                        coolDownTime;
     uint16_t                        repeatWindowTime;
 
-#endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
+#endif /* SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0 */
 } simpleButton_Type_PublicBtnStatus_t;
 
 // struct for public method.
@@ -270,14 +270,16 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitStructPublic(
     simpleButton_Type_PublicBtnStatus_t* self_public
 ) {
 
-#if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0
+#if SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0
+
     self_public->coolDownTime = SIMPLEBTN_TIME_COOL_DOWN;
     self_public->longPushMinTime = SIMPLEBTN_TIME_LONG_PUSH_MIN;
     self_public->repeatWindowTime = SIMPLEBTN_TIME_REPEAT_WINDOW;
  #if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
     self_public->holdPushMinTime = SIMPLEBTN_TIME_HOLD_PUSH_MIN;
  #endif /* SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0 */
-#endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
+ 
+#endif /* SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0 */
 
 #if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
     self_public->combinationConfig.previousButton = 0;

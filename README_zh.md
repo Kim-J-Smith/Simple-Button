@@ -62,7 +62,7 @@
 
 1. ✅ **功能全面**： 本项目目前支持*短按、长按、计时长按、双击、计数多击、组合键、长按保持*。
 
-2. ✅ **状态机**： 本项目使用了状态机进行代码组织，扩展性强。但用户无需了解状态机细节即可轻松使用。
+2. ✅ **状态机**： 本项目使用了状态机进行代码组织，实现软件消抖，且扩展性强。但用户无需了解状态机细节即可轻松使用。
 
 3. ✅ **外部中断**： 本项目使用外部中断触发按键，*天然支持低功耗*，项目也提供一行代码判断并进入低功耗的接口。
 
@@ -163,6 +163,10 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 ```c
 /** @b ================================================================ **/
 /** @b Initialization-Function */
+
+/* This macro just forward the parameter to another function */
+#define SIMPLEBTN_FUNC_INIT_EXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) \
+    simpleButton_Private_InitEXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) // It is implemented below
 
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -630,13 +634,13 @@ int main(void) {
 
 ### 可调时间
 - 本项目有许多重要的“**判定时间**”，例如：最短的长按时间、多击的窗口时间、按键的冷却时间…… 也许您需要为不同的按键配置不同的**判定时间**，这时，你就需要使用**可调时间**功能。
-- 在文件`simple_button_config.h`开头的`CUSTOMIZATION`中找到`Mode-Set`，将`#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         1`改为`#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0`，即可启用**可调时间**。（**注意！是为0时开启。一般是默认开启**）
+- 在文件`simple_button_config.h`开头的`CUSTOMIZATION`中找到`Mode-Set`，将`#define SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME         0`改为`#define SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME         1`，即可启用**可调时间**。
 - 示例如下（初始化、异步处理函数、中断处理函数等没有特殊变化，此处省略不演示）：
 
 ```c
 
 /* 需要在文件`simple_button_config.h`开头的 Mode-Set 处改变宏定义的值以启用可调时间 */
-#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0
+#define SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME         1
 
 int main(void) {
     /* ... */
@@ -851,6 +855,10 @@ int main(void) {
 ---
 
 ## 衍生项目
+
+- 本项目的衍生项目应当遵循[衍生项目规范](./docs/Derivative-Project-Specification_zh.md)，以下简称**规范**。
+
+- 如果您制作了一个遵循**规范**的项目，可以在issue中给出项目网址，这些项目网址将在下一个版本出现在下方。
 
 ### STM32
 

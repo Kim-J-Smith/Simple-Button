@@ -62,7 +62,7 @@
 
 1. ✅ **Comprehensive Features** : This project currently supports *short press, long press, timer long press, double push, counter multiple push, combination buttons, and long press hold*.
 
-2. ✅ **State Machine** : This project uses a state machine for code organization, which has strong scalability. However, users can use it easily without having to understand the details of the state machine.
+2. ✅ **State Machine** : This project employs a state machine for code organization to achieve software debouncing and has strong scalability. However, users can use it easily without having to understand the details of the state machine.
 
 3. ✅ **External Interrupt(EXTI)** : This project uses an external interrupt(EXTI) trigger button, *naturally supporting low power consumption*. The project also provides a line of code to determine and enter a low-power interface.
 
@@ -163,6 +163,10 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 ```c
 /** @b ================================================================ **/
 /** @b Initialization-Function */
+
+/* This macro just forward the parameter to another function */
+#define SIMPLEBTN_FUNC_INIT_EXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) \
+    simpleButton_Private_InitEXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) // It is implemented below
 
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -627,13 +631,13 @@ int main(void) {
 
 ### Adjustable time
 - There are many important "**decision times**" in this project, such as: minimum long press time, window time for multiple clicks, button cooldown time... Maybe you need to configure different **decision times** for different buttons, in which case, you need to use the **adjustable time** feature.
-- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME 1` to `#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME 0`, to enable **adjustable time**. (**Note! It is turned on when it is 0. Usually enabled by default**)
+- Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME 0` to `#define SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME 1`, to enable **adjustable time**.
 - The following is an example (no special changes are made to initialization, async handlers, interrupt handlers, etc.) :
 
 ```c
 
 /* Need to change macro definition value at Mode-Set at the beginning of file `simple_button_config.h` to enable adjustable time */
-#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0
+#define SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME         1
 
 int main(void) {
     /*... */
@@ -849,6 +853,10 @@ int main(void) {
 ---
 
 ## Derivative Project
+
+- Derivative projects of this project should follow the [Derivative Project Specification](./docs/Derivative-Project-Specification.md), hereinafter referred to as the **Specification**.
+
+- If you make a project that follows the **Specification**, give the project urls in an issue and they will appear below in the next version.
 
 ### STM32
 

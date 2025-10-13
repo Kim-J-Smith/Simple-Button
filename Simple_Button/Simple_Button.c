@@ -62,11 +62,11 @@ simpleButton_Private_StateWaitForEnd_Handler(
         self_private->state = simpleButton_State_Release_Delay;
     } 
 #if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
- #if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME != 0
-    else if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > SIMPLEBTN_TIME_HOLD_PUSH_MIN)
- #else
+ #if SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0
     else if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > self_public->holdPushMinTime)
- #endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME != 0 */
+ #else
+    else if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > SIMPLEBTN_TIME_HOLD_PUSH_MIN)
+ #endif /* SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0 */
     {
         self_private->timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
         self_private->state = simpleButton_State_Hold_Push;
@@ -92,11 +92,11 @@ simpleButton_Private_StateWaitForRepeat_Handler(
     SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
     SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN(); /* begin always critical section */
 
-#if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0
+#if SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0
     if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_loop > (uint32_t)self_public->repeatWindowTime)
 #else
     if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_loop > SIMPLEBTN_TIME_REPEAT_WINDOW)
-#endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
+#endif /* SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0 */
     {
 
 #if SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0
@@ -159,11 +159,11 @@ simpleButton_Private_StateSinglePush_Handler(
     simpleButton_Type_LongPushCallBack_t longPushCallBack
 ) {
     
-#if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0
+#if SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0
     if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > (uint32_t)self_public->longPushMinTime)
 #else
     if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > SIMPLEBTN_TIME_LONG_PUSH_MIN)
-#endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
+#endif /* SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0 */
     {
         simpleButton_Private_Do_LongPush(self_private, longPushCallBack);
     } else {
@@ -270,11 +270,11 @@ simpleButton_Private_StateCoolDown_Handler(
     simpleButton_Type_PrivateBtnStatus_t* const self_private,
     simpleButton_Type_PublicBtnStatus_t* const self_public
 ) {
-#if SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0
+#if SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0
     if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_loop > self_public->coolDownTime)
 #else
     if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_loop > SIMPLEBTN_TIME_COOL_DOWN)
-#endif /* SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME == 0 */
+#endif /* SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0 */
     {
         self_private->state = simpleButton_State_Wait_For_Interrupt;
     }

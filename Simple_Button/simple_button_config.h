@@ -117,8 +117,8 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 #define SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH           1
     // Enable counter repeat-push mode if this macro is defined as 1.
 #define SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH       1
-    // Enable only-use-default-time mode if this macro is defined as 1.
-#define SIMPLEBTN_MODE_ENABLE_ONLY_DEFAULT_TIME         0
+    // Enable adjustable mode if this macro is defined as 1.
+#define SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME           1
     // Enable multi-threads mode(enable this only when you do use multi-thread) if this macro is defined as 1.
 #define SIMPLEBTN_MODE_ENABLE_MULTI_THREADS             1
     // Enable long-push-hold mode if this macro is defined as 1.

@@ -1,5 +1,9 @@
+# API
+
 [English](./API.md)
 [中文](./API_zh.md)
+
+---
 
 ## Naming Conventions
 
@@ -20,3 +24,9 @@
 - All open custom types start with `SimpleButton_Type_` and end with `_t`
 
 - All state machine enums start with `simpleButton_State_`
+
+
+## Public Macros
+
+
+## Public Functions

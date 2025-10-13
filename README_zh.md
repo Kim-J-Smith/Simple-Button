@@ -62,7 +62,7 @@
 
 1. ✅ **功能全面**： 本项目目前支持*短按、长按、计时长按、双击、计数多击、组合键、长按保持*。
 
-2. ✅ **状态机**： 本项目使用了状态机进行代码组织，扩展性强。但用户无需了解状态机细节即可轻松使用。
+2. ✅ **状态机**： 本项目使用了状态机进行代码组织，实现软件消抖，且扩展性强。但用户无需了解状态机细节即可轻松使用。
 
 3. ✅ **外部中断**： 本项目使用外部中断触发按键，*天然支持低功耗*，项目也提供一行代码判断并进入低功耗的接口。
 
@@ -163,6 +163,10 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 ```c
 /** @b ================================================================ **/
 /** @b Initialization-Function */
+
+/* This macro just forward the parameter to another function */
+#define SIMPLEBTN_FUNC_INIT_EXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) \
+    simpleButton_Private_InitEXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) // It is implemented below
 
 
 #if defined(__GNUC__) || defined(__clang__)

@@ -62,7 +62,7 @@
 
 1. ✅ **Comprehensive Features** : This project currently supports *short press, long press, timer long press, double push, counter multiple push, combination buttons, and long press hold*.
 
-2. ✅ **State Machine** : This project uses a state machine for code organization, which has strong scalability. However, users can use it easily without having to understand the details of the state machine.
+2. ✅ **State Machine** : This project employs a state machine for code organization to achieve software debouncing and has strong scalability. However, users can use it easily without having to understand the details of the state machine.
 
 3. ✅ **External Interrupt(EXTI)** : This project uses an external interrupt(EXTI) trigger button, *naturally supporting low power consumption*. The project also provides a line of code to determine and enter a low-power interface.
 
@@ -163,6 +163,10 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 ```c
 /** @b ================================================================ **/
 /** @b Initialization-Function */
+
+/* This macro just forward the parameter to another function */
+#define SIMPLEBTN_FUNC_INIT_EXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) \
+    simpleButton_Private_InitEXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) // It is implemented below
 
 
 #if defined(__GNUC__) || defined(__clang__)

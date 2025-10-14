@@ -103,6 +103,8 @@
 
 #### 步骤1
 
+- **衍生项目可以跳过 “步骤1”**
+
 1. 在文件`simple_button_config.h`开头的 **Head-File** 添加芯片头文件。添加的头文件取决于具体的芯片。下方以STM32F103C8T6的HAL库举例：
 
 ```c
@@ -866,7 +868,7 @@ int main(void) {
 
 ### CH32
 
-- [标准库-Kim-J-Smith/CH32-SimpleButton]()(敬请期待)
+- [标准库-Kim-J-Smith/CH32-SimpleButton](https://github.com/Kim-J-Smith/CH32-SimpleButton)
 
 
 [回到目录](#目录)

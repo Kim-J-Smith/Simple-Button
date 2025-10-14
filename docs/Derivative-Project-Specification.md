@@ -33,7 +33,7 @@
 
 - Derivative projects are advised to keep all files except `examples/` for the project.
 
-- The original `docs/` directory was nested as `docs/docs/`, and the original `README.md` and `README_zh.md` were recommended to be moved to `docs/docs/`. The root directory provides your project's `README.md`.
+- The original `docs/` directory was nested as `docs/docs/`, and the original `README.md` and `README_zh.md` were recommended to be moved to `docs/`. The root directory provides your project's `README.md`.
 
 - It is recommended to change the `LICENSE` filename to `LICENSE-original` and add your `LICENSE` to the root directory.
 

@@ -33,7 +33,7 @@
 
 - 衍生项目建议保留本项目除`examples/`外的全部文件。
 
-- 其中原本的`docs/`目录嵌套为`docs/docs/`，而原本的`README.md`与`README_zh.md`建议转移至`docs/docs/`当中，根目录提供您的项目的`README.md`。
+- 其中原本的`docs/`目录嵌套为`docs/docs/`，而原本的`README.md`与`README_zh.md`建议转移至`docs/`当中，根目录提供您的项目的`README.md`。
 
 - `LICENSE`文件名建议修改为`LICENSE-original`，并在根目录添加您的`LICENSE`。
 

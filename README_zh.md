@@ -160,7 +160,7 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
     /* for example: __WFI() */
 ```
 
-4. 在文件`simple_button_config.h`开头的 **Initialization-Function** 实现EXTI初始化函数。此处给出STM32 HAL库示例：
+4. 在文件`simple_button_config.h`开头的 **Initialization-Function** 实现EXTI初始化函数。您需要在文件最下方的地方补全`simpleButton_Private_InitEXTI()`函数的内容。应当包括：使能GPIO时钟，配置上拉输入；配置EXTI的通道；配置EXTI对应的中断使能。
 
 ```c
 /** @b ================================================================ **/
@@ -168,124 +168,7 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 
 /* This macro just forward the parameter to another function */
 #define SIMPLEBTN_FUNC_INIT_EXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) \
-    simpleButton_Private_InitEXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) // It is implemented below
-
-
-#if defined(__GNUC__) || defined(__clang__)
-    static inline __attribute__((always_inline))
-#elif defined(_MSC_VER) || defined(__CC_ARM)
-    static __forceinline
-#else
-    static inline
-#endif /* defined(__GNUC__) || defined(__clang__) */
-void simpleButton_Private_InitEXTI(
-    simpleButton_Type_GPIOBase_t    GPIOX_Base,
-    simpleButton_Type_GPIOPin_t     GPIO_Pin_X,
-    simpleButton_Type_EXTITrigger_t EXTI_Trigger_X
-) {
-    /* Initialize the AFIO Clock(F1xx) or SYSCFG Clock */
-#if defined(__HAL_RCC_AFIO_CLK_ENABLE)
-    __HAL_RCC_AFIO_CLK_ENABLE();
-#elif defined(__HAL_RCC_SYSCFG_CLK_ENABLE)
-    __HAL_RCC_SYSCFG_CLK_ENABLE();
-#else
- #warning Cannot find macro for AFIO or SYSCFG !
-#endif /* AFIO or SYSCFG */
-
-    /* Initialize the GPIOx Clock */
-    switch (GPIOX_Base) {
-    case GPIOA_BASE:
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-        break;
-    case GPIOB_BASE:
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-        break;
-    case GPIOC_BASE:
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-        break;
-    case GPIOD_BASE:
-        __HAL_RCC_GPIOD_CLK_ENABLE();
-        break;
-    case GPIOE_BASE:
-        __HAL_RCC_GPIOE_CLK_ENABLE();
-        break;
-    default:
-        /* ... error handler ... */
-    }
-
-    /* Configure the GPIOx */
-    GPIO_InitTypeDef gpio_config;
-    gpio_config.Mode = (EXTI_Trigger_X == EXTI_TRIGGER_RISING)
-        ? (GPIO_MODE_IT_RISING) : (GPIO_MODE_IT_FALLING);
-    gpio_config.Pin = (uint32_t) GPIO_Pin_X;
-    gpio_config.Pull = (EXTI_Trigger_X == EXTI_TRIGGER_RISING)
-        ? (GPIO_PULLDOWN) : (GPIO_PULLUP);
-    gpio_config.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init((GPIO_TypeDef*)GPIOX_Base, &gpio_config);
-
-    /* Initialize the EXTI */
-    IRQn_Type the_exti_IRQ;
-    switch (GPIO_Pin_X) {
-    case GPIO_PIN_0:
-        the_exti_IRQ = EXTI0_IRQn;
-        break;
-    case GPIO_PIN_1:
-        the_exti_IRQ = EXTI1_IRQn;
-        break;
-    case GPIO_PIN_2:
-        the_exti_IRQ = EXTI2_IRQn;
-        break;
-    case GPIO_PIN_3:
-        the_exti_IRQ = EXTI3_IRQn;
-        break;
-    case GPIO_PIN_4:
-        the_exti_IRQ = EXTI4_IRQn;
-        break;
-    case GPIO_PIN_5:
-        the_exti_IRQ = EXTI9_5_IRQn;
-        break;
-    case GPIO_PIN_6:
-        the_exti_IRQ = EXTI9_5_IRQn;
-        break;
-    case GPIO_PIN_7:
-        the_exti_IRQ = EXTI9_5_IRQn;
-        break;
-    case GPIO_PIN_8:
-        the_exti_IRQ = EXTI9_5_IRQn;
-        break;
-    case GPIO_PIN_9:
-        the_exti_IRQ = EXTI9_5_IRQn;
-        break;
-    case GPIO_PIN_10:
-        the_exti_IRQ = EXTI15_10_IRQn;
-        break;
-    case GPIO_PIN_11:
-        the_exti_IRQ = EXTI15_10_IRQn;
-        break;
-    case GPIO_PIN_12:
-        the_exti_IRQ = EXTI15_10_IRQn;
-        break;
-    case GPIO_PIN_13:
-        the_exti_IRQ = EXTI15_10_IRQn;
-        break;
-    case GPIO_PIN_14:
-        the_exti_IRQ = EXTI15_10_IRQn;
-        break;
-    case GPIO_PIN_15:
-        the_exti_IRQ = EXTI15_10_IRQn;
-        break;
-    default:
-        /* ... error handler ... */
-
-    }
-    HAL_NVIC_SetPriority(
-        the_exti_IRQ, 
-        EXTI_PreemptionPriority, /* your priority */
-        EXTI_SubPriority /* your priority */
-    );
-    HAL_NVIC_EnableIRQ(the_exti_IRQ);
-
-}
+    simpleButton_Private_InitEXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X)
 ```
 
 #### 步骤2

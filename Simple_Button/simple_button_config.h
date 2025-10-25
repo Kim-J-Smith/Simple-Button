@@ -164,20 +164,11 @@ void simpleButton_Private_InitEXTI(
     simpleButton_Type_EXTITrigger_t EXTI_Trigger_X
 ) {
     /* Write your code to initialize the GPIO/EXTI/NVIC ... */
-
     /* (void)xxx is used to suppress warning: "unused variables" */
     (void)GPIOX_Base;
     (void)GPIO_Pin_X;
     (void)EXTI_Trigger_X;
 }
-
-/**
- * User can do more things in this place.
- * 
- * More static inline functions can be written here.
- * 
- * ...
- */
 
 /* ================================ END ================================ */
 

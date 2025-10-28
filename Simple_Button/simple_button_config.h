@@ -12,7 +12,7 @@
  * @attention       Copyright (c) 2025 Kim-J-Smith.
  *                  All rights reserved.
  * 
- * @copyright       This project complies with the MIT License.
+ * @copyright       SPDX-License-Identifier: MIT
  *                  Refer to the LICENCE file in root for more details.
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */

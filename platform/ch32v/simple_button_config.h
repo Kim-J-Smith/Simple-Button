@@ -12,7 +12,7 @@
  * @attention       Copyright (c) 2025 Kim-J-Smith.
  *                  All rights reserved.
  * 
- * @copyright       This project complies with the MIT License.
+ * @copyright       SPDX-License-Identifier: MIT
  *                  Refer to the LICENCE file in root for more details.
  * 
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
@@ -199,26 +199,36 @@ void simpleButton_Private_InitEXTI(
     /* static constexpr assign values to variables */
     switch(GPIOX_Base)
     {
+#if defined(GPIOA_BASE) && defined(RCC_APB2Periph_GPIOA)
     case GPIOA_BASE:
         PortSource = GPIO_PortSourceGPIOA;
         RCC_GPIOX = RCC_APB2Periph_GPIOA;
         break;
+#endif /* defined(GPIOA) */
+#if defined(GPIOB_BASE) && defined(RCC_APB2Periph_GPIOB)
     case GPIOB_BASE:
         PortSource = GPIO_PortSourceGPIOB;
         RCC_GPIOX = RCC_APB2Periph_GPIOB;
         break;
+#endif /* defined(GPIOB) */
+#if defined(GPIOC_BASE) && defined(RCC_APB2Periph_GPIOC)
     case GPIOC_BASE:
         PortSource = GPIO_PortSourceGPIOC;
         RCC_GPIOX = RCC_APB2Periph_GPIOC;
         break;
+#endif /* defined(GPIOC) */
+#if defined(GPIOD_BASE) && defined(RCC_APB2Periph_GPIOD)
     case GPIOD_BASE:
         PortSource = GPIO_PortSourceGPIOD;
         RCC_GPIOX = RCC_APB2Periph_GPIOD;
         break;
+#endif /* defined(GPIOD) */
+#if defined(GPIOE_BASE) && defined(RCC_APB2Periph_GPIOE)
     case GPIOE_BASE:
         PortSource = GPIO_PortSourceGPIOE;
         RCC_GPIOX = RCC_APB2Periph_GPIOE;
         break;
+#endif /* defined(GPIOE) */
 #if defined(GPIOF_BASE) && defined(RCC_APB2Periph_GPIOF)
     case GPIOF_BASE:
         PortSource = GPIO_PortSourceGPIOF;
@@ -279,7 +289,50 @@ void simpleButton_Private_InitEXTI(
     }
 
     switch(GPIO_Pin_X)
-    {         
+    {
+
+#if defined(__CH32V00x_H) // CH32V003
+    case GPIO_Pin_0:            
+        PinSource = GPIO_PinSource0; 
+        EXTI_Line = EXTI_Line0; 
+        nvic_config.NVIC_IRQChannel = EXTI7_0_IRQn;
+        break;
+    case GPIO_Pin_1:            
+        PinSource = GPIO_PinSource1; 
+        EXTI_Line = EXTI_Line1; 
+        nvic_config.NVIC_IRQChannel = EXTI7_0_IRQn;
+        break;
+    case GPIO_Pin_2:            
+        PinSource = GPIO_PinSource2; 
+        EXTI_Line = EXTI_Line2; 
+        nvic_config.NVIC_IRQChannel = EXTI7_0_IRQn;
+        break;
+    case GPIO_Pin_3:            
+        PinSource = GPIO_PinSource3; 
+        EXTI_Line = EXTI_Line3; 
+        nvic_config.NVIC_IRQChannel = EXTI7_0_IRQn;
+        break;
+    case GPIO_Pin_4:            
+        PinSource = GPIO_PinSource4; 
+        EXTI_Line = EXTI_Line4; 
+        nvic_config.NVIC_IRQChannel = EXTI7_0_IRQn;
+        break;
+    case GPIO_Pin_5:            
+        PinSource = GPIO_PinSource5; 
+        EXTI_Line = EXTI_Line5; 
+        nvic_config.NVIC_IRQChannel = EXTI7_0_IRQn;
+        break;
+    case GPIO_Pin_6:            
+        PinSource = GPIO_PinSource6; 
+        EXTI_Line = EXTI_Line6; 
+        nvic_config.NVIC_IRQChannel = EXTI7_0_IRQn;
+        break;
+    case GPIO_Pin_7:            
+        PinSource = GPIO_PinSource7; 
+        EXTI_Line = EXTI_Line7; 
+        nvic_config.NVIC_IRQChannel = EXTI7_0_IRQn;
+        break;
+#else
     case GPIO_Pin_0:            
         PinSource = GPIO_PinSource0; 
         EXTI_Line = EXTI_Line0; 
@@ -360,10 +413,12 @@ void simpleButton_Private_InitEXTI(
         EXTI_Line = EXTI_Line15;
         nvic_config.NVIC_IRQChannel = EXTI15_10_IRQn;
         break;
+#endif
+
     default:  
         SIMPLEBTN_FUNC_PANIC("unexpected GPIO pin", , );
         break;
-    }
+    } // end switch
 
     /* GPIO & AFIO Init */
     RCC_APB2PeriphClockCmd(RCC_GPIOX, ENABLE);

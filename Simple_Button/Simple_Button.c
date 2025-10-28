@@ -12,7 +12,7 @@
  * @attention       Copyright (c) 2025 Kim-J-Smith.
  *                  All rights reserved.
  * 
- * @copyright       This project complies with the MIT License.
+ * @copyright       SPDX-License-Identifier: MIT
  *                  Refer to the LICENCE file in root for more details.
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
@@ -123,7 +123,7 @@ simpleButton_Private_Do_LongPush(
 ) {
 
 #if SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH == 0
-    (void)self;
+    (void)self_private;
     SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
     if (longPushCallBack != 0) {
         longPushCallBack();
@@ -407,7 +407,8 @@ simpleButton_Private_StateDefault_Handler(
 
 /**
  * @brief           Asynchronously call the callback function in while loop.
- * @param[inout]    self - pointer to self struct.
+ * @param[inout]    self_private - pointer to self.Private struct.
+ * @param[inout]    self_public - pointer to self.Public struct.
  * @param[in]       gpiox_base - Address of GPIO port connected to the button.
  * @param[in]       gpio_pin_x - GPIO pin number connected to the button.
  * @param[in]       normal_pin_val - Normal(didn't push) pin value of button pin. (can be 1 or 0)

@@ -745,11 +745,11 @@ int main(void) {
 
 ### STM32
 
-- [HAL-Kim-J-Smith/STM32-SimpleButton](https://github.com/Kim-J-Smith/STM32-SimpleButton)
+- [HAL-Kim-J-Smith/STM32-SimpleButton](/platform/stm32-hal/)
 
 ### CH32
 
-- [StandardLib-Kim-J-Smith/CH32-SimpleButton](https://github.com/Kim-J-Smith/CH32-SimpleButton)
+- [StandardLib-Kim-J-Smith/CH32-SimpleButton](/platform/ch32v/)
 
 
 [Back to Contents](#contents)

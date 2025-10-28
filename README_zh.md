@@ -747,11 +747,11 @@ int main(void) {
 
 ### STM32
 
-- [HAL库-Kim-J-Smith/STM32-SimpleButton](https://github.com/Kim-J-Smith/STM32-SimpleButton)
+- [HAL库-Kim-J-Smith/STM32-SimpleButton](/platform/stm32-hal/)
 
 ### CH32
 
-- [标准库-Kim-J-Smith/CH32-SimpleButton](https://github.com/Kim-J-Smith/CH32-SimpleButton)
+- [标准库-Kim-J-Smith/CH32-SimpleButton](/platform/ch32v/)
 
 
 [回到目录](#目录)

@@ -105,6 +105,8 @@
 
 - **衍生项目可以跳过 “步骤1”**
 
+- 更多细节参见[config_guide_zh](./docs/config_guide_zh.md)
+
 1. 在文件`simple_button_config.h`开头的 **Head-File** 添加芯片头文件。添加的头文件取决于具体的芯片。下方以STM32F103C8T6的HAL库举例：
 
 ```c

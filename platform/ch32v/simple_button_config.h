@@ -75,7 +75,10 @@ typedef EXTITrigger_TypeDef simpleButton_Type_EXTITrigger_t;
     GPIO_ReadInputDataBit((GPIO_TypeDef*)GPIOX_Base, Pin)
 
 #define SIMPLEBTN_FUNC_GET_TICK() \
-    HAL_GetTick()
+    HAL_GetTick() // or xTaskGetTickCount() if you use FreeRTOS
+
+#define SIMPLEBTN_FUNC_GET_TICK_FromISR() \
+    HAL_GetTick() // or xTaskGetTickCountFromISR() if you use FreeRTOS
 
 #define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc) \
     do { simpleButton_debug_panic(Cause); } while(0) /* only used in DEBUG mode */
@@ -184,9 +187,7 @@ void simpleButton_Private_InitEXTI(
     simpleButton_Type_GPIOPin_t     GPIO_Pin_X,
     simpleButton_Type_EXTITrigger_t EXTI_Trigger_X
 ) {
-    /* Init the time base */
-    HAL_InitTick();
-    
+
     /* Initialize the GPIOx Clock */
     GPIO_InitTypeDef gpio_config;
     EXTI_InitTypeDef exti_config;    

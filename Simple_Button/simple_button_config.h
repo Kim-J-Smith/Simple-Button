@@ -70,7 +70,10 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
     /* for example: HAL_GPIO_ReadPin((GPIO_TypeDef*)(GPIOX_Base), Pin) */
 
 #define SIMPLEBTN_FUNC_GET_TICK() \
-    /* for example: HAL_GetTick() */
+    /* for example: HAL_GetTick() or xTaskGetTickCount() */
+
+#define SIMPLEBTN_FUNC_GET_TICK_FromISR() \
+    /* for example: HAL_GetTick() or xTaskGetTickCountFromISR() */
 
 #define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc) \
     /* for example: do { Error_Handler(ErrorNum); } while (1) */ /* only used in DEBUG mode */

@@ -81,6 +81,8 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 
 #define SIMPLEBTN_FUNC_GET_TICK()  HAL_GetTick()
 
+#define SIMPLEBTN_FUNC_GET_TICK_FromISR() HAL_GetTick()
+
 /* only used in DEBUG mode */
 #define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc)  do { Error_Handler(); } while (1)
 

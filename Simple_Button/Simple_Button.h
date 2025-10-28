@@ -28,6 +28,11 @@
 
 /* ============== Private-Use Macro / Type / Function ================= */
 
+// Compatible with previous versions
+#ifndef SIMPLEBTN_FUNC_GET_TICK_FromISR
+ #define SIMPLEBTN_FUNC_GET_TICK_FromISR()  SIMPLEBTN_FUNC_GET_TICK()
+#endif /* SIMPLEBTN_FUNC_GET_TICK_FromISR */
+
 // Macro for bit-field
 #define SIMPLEBTN_BITFIELD(type)                        uint32_t
 
@@ -384,7 +389,7 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InterruptHandler(
         (simpleButton_Type_ButtonState_t)(self_private->state) == simpleButton_State_Wait_For_Interrupt
         || (simpleButton_Type_ButtonState_t)(self_private->state) == simpleButton_State_Wait_For_Repeat
     ) {
-        self_private->timeStamp_interrupt = SIMPLEBTN_FUNC_GET_TICK();
+        self_private->timeStamp_interrupt = SIMPLEBTN_FUNC_GET_TICK_FromISR();
         self_private->state = simpleButton_State_Push_Delay;
     }
 }

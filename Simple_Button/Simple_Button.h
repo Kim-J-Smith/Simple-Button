@@ -378,14 +378,14 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitButton(
  * @return          None
  */
 SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InterruptHandler(
-    simpleButton_Type_Button_t* self
+    simpleButton_Type_PrivateBtnStatus_t* self_private
 ) {
     if (
-        (simpleButton_Type_ButtonState_t)(self->Private.state) == simpleButton_State_Wait_For_Interrupt
-        || (simpleButton_Type_ButtonState_t)(self->Private.state) == simpleButton_State_Wait_For_Repeat
+        (simpleButton_Type_ButtonState_t)(self_private->state) == simpleButton_State_Wait_For_Interrupt
+        || (simpleButton_Type_ButtonState_t)(self_private->state) == simpleButton_State_Wait_For_Repeat
     ) {
-        self->Private.timeStamp_interrupt = SIMPLEBTN_FUNC_GET_TICK();
-        self->Private.state = simpleButton_State_Push_Delay;
+        self_private->timeStamp_interrupt = SIMPLEBTN_FUNC_GET_TICK();
+        self_private->state = simpleButton_State_Push_Delay;
     }
 }
 
@@ -542,7 +542,7 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
     static void                                                                 \
     SIMPLEBTN_CONNECT2(simpleButton_Private_ITHandler_, __name)(void) {         \
         simpleButton_Private_InterruptHandler(                                  \
-            &(SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name))                  \
+            &(SIMPLEBTN_CONNECT2(SIMPLEBTN_NAMESPACE, __name).Private)          \
         );                                                                      \
     }                                                                           \
                                                                                 \

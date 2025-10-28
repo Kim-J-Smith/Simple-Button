@@ -62,7 +62,7 @@
 
 1. ✅ **Comprehensive Features** : This project currently supports *short press, long press, timer long press, double push, counter multiple push, combination buttons, and long press hold*.
 
-2. ✅ **State Machine** : This project employs a state machine for code organization to achieve software debouncing and has strong scalability. However, users can use it easily without having to understand the details of the state machine.
+2. ✅ **State Machine** : This project employs a state machine for code organization to achieve software debouncing and has strong scalability. However, **users can use it easily without having to understand the details of the state machine.**
 
 3. ✅ **External Interrupt(EXTI)** : This project uses an external interrupt(EXTI) trigger button, *naturally supporting low power consumption*. The project also provides a line of code to determine and enter a low-power interface.
 
@@ -84,7 +84,7 @@
 
 ### Overview
 
-- As this project is a cross-platform one, all its interfaces are abstract, or in other words: all interfaces need to be customized by the user according to the chip being used. From this perspective, this project is merely a "half-finished product". If you prefer to use it directly out of the box, you can take a look at the customized version of the chip you need in the [Derivative Project](#derivative-project). If so, you can directly download it, skip step 1 and proceed directly to step 2.
+- As this project is a cross-platform one, all its interfaces are abstract, or in other words: all interfaces need to be customized by the user according to the chip being used. From this perspective, this project is merely a "half-finished product". If you prefer to use it directly out of the box, you can take a look at the customized version of the chip you need in the [Derivative Project](#derivative-project). If so, you can directly use the corresponding customized configuration file to skip step 1 and proceed directly to step 2.
 
 - **Step 1**: You need to customize the transformation for your chip(do step 1 in `simple_button_config.h`):
     - 1.1 - Add head file in **Head-File** at the beginning of the file `simple_button_config.h`.
@@ -104,6 +104,8 @@
 #### Step 1
 
 - **Derivative projects can skip "Step 1"**
+
+- See [config_guide](./docs/config_guide.md) for more details.
 
 1. Add head file in **Head-File** at the beginning of the file `simple_button_config.h`. The added header files depend on the specific chip. The following takes the HAL library of STM32F103C8T6 as an example:
 

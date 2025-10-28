@@ -5,21 +5,21 @@
  * 
  * @brief           The configuration file of the Simple_Button file.
  * 
- * @version         0.7.3 ( SIMPLEBUTTON_CONFIG_H__ == 0014L )
+ * @version         0.7.4 ( SIMPLEBUTTON_CONFIG_H__ == 0015L )
  * 
  * @date            2025-10-03
  * 
  * @attention       Copyright (c) 2025 Kim-J-Smith.
  *                  All rights reserved.
  * 
- * @copyright       This project complies with the MIT License.
+ * @copyright       SPDX-License-Identifier: MIT
  *                  Refer to the LICENCE file in root for more details.
  * 
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  *                  <https://github.com/Kim-J-Smith/STM32-SimpleButton>
  */
 #ifndef     SIMPLEBUTTON_CONFIG_H__
-#define     SIMPLEBUTTON_CONFIG_H__     0014L
+#define     SIMPLEBUTTON_CONFIG_H__     0015L
 #include <stdint.h>
 
 /** @p ================================================================ **/
@@ -80,6 +80,8 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 #define SIMPLEBTN_FUNC_READ_PIN(GPIOX_Base, Pin) HAL_GPIO_ReadPin((GPIO_TypeDef*)(GPIOX_Base), Pin)
 
 #define SIMPLEBTN_FUNC_GET_TICK()  HAL_GetTick()
+
+#define SIMPLEBTN_FUNC_GET_TICK_FromISR() HAL_GetTick()
 
 /* only used in DEBUG mode */
 #define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc)  do { Error_Handler(); } while (1)

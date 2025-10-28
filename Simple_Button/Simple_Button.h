@@ -5,19 +5,19 @@
  * 
  * @brief           A template for the button is provided
  * 
- * @version         0.7.3 ( SIMPLEBUTTON_H__ == 0014L )
+ * @version         0.7.4 ( SIMPLEBUTTON_H__ == 0015L )
  * 
  * @date            2025-10-03
  * 
  * @attention       Copyright (c) 2025 Kim-J-Smith.
  *                  All rights reserved.
  * 
- * @copyright       This project complies with the MIT License.
+ * @copyright       SPDX-License-Identifier: MIT
  *                  Refer to the LICENCE file in root for more details.
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #ifndef     SIMPLEBUTTON_H__
-#define     SIMPLEBUTTON_H__    0014L
+#define     SIMPLEBUTTON_H__    0015L
 
 /* Incldue the config file of Simple_Button and check the version */
 #include    "simple_button_config.h"
@@ -27,6 +27,11 @@
 #endif /* SIMPLEBUTTON_CONFIG_H__ != SIMPLEBUTTON_H__ */
 
 /* ============== Private-Use Macro / Type / Function ================= */
+
+// Compatible with previous versions
+#ifndef SIMPLEBTN_FUNC_GET_TICK_FromISR
+ #define SIMPLEBTN_FUNC_GET_TICK_FromISR()  SIMPLEBTN_FUNC_GET_TICK()
+#endif /* SIMPLEBTN_FUNC_GET_TICK_FromISR */
 
 // Macro for bit-field
 #define SIMPLEBTN_BITFIELD(type)                        uint32_t
@@ -384,7 +389,7 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InterruptHandler(
         (simpleButton_Type_ButtonState_t)(self_private->state) == simpleButton_State_Wait_For_Interrupt
         || (simpleButton_Type_ButtonState_t)(self_private->state) == simpleButton_State_Wait_For_Repeat
     ) {
-        self_private->timeStamp_interrupt = SIMPLEBTN_FUNC_GET_TICK();
+        self_private->timeStamp_interrupt = SIMPLEBTN_FUNC_GET_TICK_FromISR();
         self_private->state = simpleButton_State_Push_Delay;
     }
 }

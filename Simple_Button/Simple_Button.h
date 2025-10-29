@@ -21,27 +21,27 @@
 
 /* Incldue the config file of Simple_Button and check the version */
 #include    "simple_button_config.h"
-#if SIMPLEBUTTON_CONFIG_H__ != SIMPLEBUTTON_H__
+#if ( SIMPLEBUTTON_CONFIG_H__ != SIMPLEBUTTON_H__ )
  #warning [Simple-Button] : the version of "simple_button_config.h"\
  is different from it of "Simple_Button.h".
 #endif /* SIMPLEBUTTON_CONFIG_H__ != SIMPLEBUTTON_H__ */
 
 /* ============== Private-Use Macro / Type / Function ================= */
 
-// Compatible with previous versions
+/* Compatible with previous versions */
 #ifndef SIMPLEBTN_FUNC_GET_TICK_FromISR
  #define SIMPLEBTN_FUNC_GET_TICK_FromISR()  SIMPLEBTN_FUNC_GET_TICK()
 #endif /* SIMPLEBTN_FUNC_GET_TICK_FromISR */
 
-// Macro for bit-field
+/* Macro for bit-field */
 #define SIMPLEBTN_BITFIELD(type)                        uint32_t
 
-// Macro for debug
+/* Macro for debug */
 #if SIMPLEBTN_MODE_ENABLE_DEBUG == 1
  #define SIMPLEBTN_DEBUG
 #endif /* SIMPLEBTN_MODE_ENABLE_DEBUG == 1 */
 
-// Macro for multi-threads
+/* Macro for multi-threads */
 #if SIMPLEBTN_MODE_ENABLE_MULTI_THREADS == 1
  #define SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M() SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN()
  #define SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M() SIMPLEBTN_FUNC_CRITICAL_SECTION_END()
@@ -50,14 +50,14 @@
  #define SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M()
 #endif /* SIMPLEBTN_MODE_ENABLE_MULTI_THREADS == 1 */
 
-// Macro for C API
+/* Macro for C API */
 #ifdef __cplusplus
  #define SIMPLEBTN_C_API extern "C"
 #else
  #define SIMPLEBTN_C_API
 #endif
 
-// Macro for force-inline
+/* Macro for force-inline */
 #if !defined(SIMPLEBTN_FORCE_INLINE)
  #if defined(__GNUC__) || defined(__clang__)
   #define SIMPLEBTN_FORCE_INLINE static inline __attribute__((always_inline))
@@ -68,14 +68,14 @@
  #endif
 #endif /* !defined(SIMPLEBTN_FORCE_INLINE) */
 
-// Macro to connect 2 macro
+/* Macro to connect 2 macro */
 #define SIMPLEBTN_CONNECT2(a, b) SIMPLEBTN_CONNECT2_1(a, b)
 #define SIMPLEBTN_CONNECT2_1(a, b) SIMPLEBTN_CONNECT2_2(a, b)
 #define SIMPLEBTN_CONNECT2_2(a, b) SIMPLEBTN_CONNECT2_3(a, b)
 #define SIMPLEBTN_CONNECT2_3(a, b) SIMPLEBTN_CONNECT2_4(a, b)
 #define SIMPLEBTN_CONNECT2_4(a, b) SIMPLEBTN_CONNECT2_5(a, b)
 #define SIMPLEBTN_CONNECT2_5(a, b) a ## b
-// Macro to connect 3 macro
+/* Macro to connect 3 macro */
 #define SIMPLEBTN_CONNECT3(a, b, c) SIMPLEBTN_CONNECT3_1(a, b, c)
 #define SIMPLEBTN_CONNECT3_1(a, b, c) SIMPLEBTN_CONNECT3_2(a, b, c)
 #define SIMPLEBTN_CONNECT3_2(a, b, c) SIMPLEBTN_CONNECT3_3(a, b, c)
@@ -86,11 +86,11 @@
 #if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) \
     || (defined(__cplusplus) && __cplusplus >= 201103L)
 
-// Macro to count args - 1
+/* Macro to count args - 1 */
  #define SIMPLEBTN_COUNT_ARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8,  \
     _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20,      \
     _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, N, ...) N
-// Macro to count args - 2
+/* Macro to count args - 2 */
  #define SIMPLEBTN_COUNT_ARGS(...)         \
     SIMPLEBTN_COUNT_ARGS_IMPL(__VA_ARGS__, \
         32, 31, 30, 29, 28, 27, 26, 25, \
@@ -100,24 +100,24 @@
 
 #endif /* >= C99 or C++11 */
 
-// Short-Push callback function pointer Type
+/* Short-Push callback function pointer Type */
 typedef void (* simpleButton_Type_ShortPushCallBack_t)(void);
 
-// Long-Push callback function pointer Type
+/* Long-Push callback function pointer Type */
 #if SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH == 0
  typedef void (* simpleButton_Type_LongPushCallBack_t)(void);
 #else
  typedef void (* simpleButton_Type_LongPushCallBack_t)(uint32_t longPushTime);
 #endif /* SIMPLEBTN_MODE_ENABLE_TIMER_LONG_PUSH == 0 */
 
-// Repeat-Push callback function pointer Type
+/* Repeat-Push callback function pointer Type */
 #if SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0
  typedef void (* simpleButton_Type_RepeatPushCallBack_t)(void);
 #else
  typedef void (* simpleButton_Type_RepeatPushCallBack_t)(uint8_t repeatCount);
 #endif /* SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0 */
 
-// Combination-Push callback function pointer Type
+/* Combination-Push callback function pointer Type */
 #if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
  typedef void (* simpleButton_Type_CombinationPushCallBack_t)(void);
 #endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
@@ -172,7 +172,7 @@ typedef enum simpleButton_Type_ButtonState_t {
 
 } simpleButton_Type_ButtonState_t;
 
-// struct for button private status.
+/* struct for button private status. */
 typedef struct simpleButton_Type_PrivateBtnStatus_t {
 
     uint32_t                        timeStamp_loop; /* used in while loop */
@@ -185,10 +185,10 @@ typedef struct simpleButton_Type_PrivateBtnStatus_t {
 
 } simpleButton_Type_PrivateBtnStatus_t;
 
-// struct for combination status and config.
+/* struct for combination status and config. */
 #if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
 
- struct simpleButton_Type_Button_t; // declare
+ struct simpleButton_Type_Button_t; /* just declare */
  typedef struct simpleButton_Type_CmbBtnConfig_t {
 
     volatile struct simpleButton_Type_Button_t* previousButton;
@@ -199,7 +199,7 @@ typedef struct simpleButton_Type_PrivateBtnStatus_t {
 
 #endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
 
-// struct for public status and config.
+/* struct for public status and config. */
 typedef struct simpleButton_Type_PublicBtnStatus_t {
 
 #if SIMPLEBTN_MODE_ENABLE_COMBINATION != 0
@@ -221,7 +221,7 @@ typedef struct simpleButton_Type_PublicBtnStatus_t {
 #endif /* SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0 */
 } simpleButton_Type_PublicBtnStatus_t;
 
-// struct for public method.
+/* struct for public method. */
 typedef struct simpleButton_Type_ButtonMethod_t {
 
     simpleButton_Type_AsynchronousHandler_t asynchronousHandler;

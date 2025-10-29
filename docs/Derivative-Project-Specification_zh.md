@@ -22,6 +22,8 @@
 |
 +-- examples/  # 示例代码
 |
++-- platform/  # 典型芯片平台衍生项目的配置文件
+|
 +-- Simple_Button/  # 项目主要代码
 |
 +-- .gitattributes  # 辅助显示文件

@@ -17,7 +17,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #include    "Simple_Button.h"
-#if SIMPLEBUTTON_H__ != 0016L
+#if ( SIMPLEBUTTON_H__ != 0016L )
  #warning [Simple-Button]: There may be something wrong with the version.
 #endif /* SIMPLEBTN_C_API */
 
@@ -109,13 +109,13 @@ simpleButton_Private_StateWaitForRepeat_Handler(
         }
 #endif /* SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0 */
 
-    } // end if
+    } /* end if */
 
     SIMPLEBTN_FUNC_CRITICAL_SECTION_END(); /* end always critical section */
     SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
 }
 
-// a helper function
+/* a helper function */
 SIMPLEBTN_FORCE_INLINE void
 simpleButton_Private_Do_LongPush(
     simpleButton_Type_PrivateBtnStatus_t* const self_private,
@@ -190,7 +190,7 @@ simpleButton_Private_StateRepeatPush_Handler(
         repeatPushCallBack(self_private->push_time);
 #endif /* SIMPLEBTN_MODE_ENABLE_COUNTER_REPEAT_PUSH == 0 */
 
-    } // end if
+    } /* end if */
 
     SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
     self_private->push_time = 0;
@@ -198,7 +198,7 @@ simpleButton_Private_StateRepeatPush_Handler(
     self_private->state = simpleButton_State_Cool_Down;
 }
 
-// a helper function
+/* a helper function */
 SIMPLEBTN_FORCE_INLINE void
 simpleButton_Private_CmbBtnAfterReleaseOK(
     simpleButton_Type_PrivateBtnStatus_t* const self_private,
@@ -224,7 +224,7 @@ simpleButton_Private_CmbBtnAfterReleaseOK(
 #endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
 }
 
-// a helper function
+/* a helper function */
 SIMPLEBTN_FORCE_INLINE void
 simpleButton_Private_ReleaseOK(
     simpleButton_Type_PrivateBtnStatus_t* const self_private,
@@ -509,7 +509,7 @@ simpleButton_Private_AsynchronousHandler(
         break;
     }
 
-    } // end switch
+    } /* end switch */
 
     SIMPLEBTN_FUNC_CRITICAL_SECTION_END_M(); /* end multi-thread critical section */
 }

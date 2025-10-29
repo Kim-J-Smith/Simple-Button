@@ -22,6 +22,8 @@
 |
 +-- examples/ # Example code
 |
++-- platform/  # Configuration files of typical MCU platform derivative projects
+|
 +-- Simple_Button/ # main code of the project
 |
 +--.gitattributes # Help display files

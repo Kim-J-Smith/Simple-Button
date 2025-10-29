@@ -5,7 +5,7 @@
  * 
  * @brief           The configuration file of the Simple_Button file.
  * 
- * @version         0.7.4 ( SIMPLEBUTTON_CONFIG_H__ == 0015L )
+ * @version         0.7.5 ( SIMPLEBUTTON_CONFIG_H__ == 0016L )
  * 
  * @date            2025-10-03
  * 
@@ -19,7 +19,7 @@
  *                  <https://github.com/Kim-J-Smith/CH32-SimpleButton>
  */
 #ifndef     SIMPLEBUTTON_CONFIG_H__
-#define     SIMPLEBUTTON_CONFIG_H__     0015L
+#define     SIMPLEBUTTON_CONFIG_H__     0016L
 #include <stdint.h>
 
 /** @p ================================================================ **/

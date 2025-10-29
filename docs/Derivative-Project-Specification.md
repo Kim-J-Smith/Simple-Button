@@ -43,6 +43,8 @@
 
 - In the `Simple_Button/` directory, the files you newly added are recommended to start with `sBtn_`. Use `SIMPLEBUTTON_XXX_H__` to manage your header files. 
 
+- The `platform/` folder does not need to be retained.
+
 - Finally, the directory structure of the derivative projects is as follows: 
 
 ```

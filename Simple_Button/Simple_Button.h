@@ -5,7 +5,7 @@
  * 
  * @brief           A template for the button is provided
  * 
- * @version         0.7.4 ( SIMPLEBUTTON_H__ == 0015L )
+ * @version         0.7.5 ( SIMPLEBUTTON_H__ == 0016L )
  * 
  * @date            2025-10-03
  * 
@@ -17,7 +17,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #ifndef     SIMPLEBUTTON_H__
-#define     SIMPLEBUTTON_H__    0015L
+#define     SIMPLEBUTTON_H__    0016L
 
 /* Incldue the config file of Simple_Button and check the version */
 #include    "simple_button_config.h"

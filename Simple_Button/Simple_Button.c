@@ -5,7 +5,7 @@
  * 
  * @brief           State Machine and dynamic-button functions
  * 
- * @version         0.7.4 ( 0015L )
+ * @version         0.7.5 ( 0016L )
  * 
  * @date            2025-10-03
  * 
@@ -17,7 +17,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #include    "Simple_Button.h"
-#if SIMPLEBUTTON_H__ != 0015L
+#if SIMPLEBUTTON_H__ != 0016L
  #warning [Simple-Button]: There may be something wrong with the version.
 #endif /* SIMPLEBTN_C_API */
 

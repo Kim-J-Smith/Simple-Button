@@ -43,6 +43,8 @@
 
 - 在`Simple_Button/`目录中您新增加的文件建议用`sBtn_`开头，使用`SIMPLEBUTTON_XXX_H__`管理您的头文件。
 
+- `platform/` 文件夹无须保留。
+
 - 最终，衍生项目的目录结构如下：
 
 ```

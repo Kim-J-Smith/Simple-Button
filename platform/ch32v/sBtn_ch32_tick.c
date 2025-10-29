@@ -98,8 +98,12 @@ extern "C" {
   */
  WEAK uint32_t HAL_GetTick(void)
  {
+#ifndef __CH32V10x_H
+    return (uint32_t) (SysTick->CNT / g_systick_div);
+#else
     volatile uint64_t* P_CNT = (uint64_t*) &(SysTick->CNTL0);
     return (uint32_t) ( (*P_CNT) / g_systick_div);
+#endif /* __CH32V10x_H */
  }
 
  WEAK void HAL_Delay(uint32_t Delay)

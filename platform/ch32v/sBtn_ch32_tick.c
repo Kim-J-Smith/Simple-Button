@@ -5,7 +5,7 @@
  * 
  * @brief           Header file to define ch32 tick APIs.
  * 
- * @version         0.2.0 ( 0010L )
+ * @version         0.2.1 ( 0011L )
  * 
  * @date            2025-10-03
  * 
@@ -58,6 +58,7 @@ extern "C" {
         return; /* has been initialized */
     }
 
+#ifndef __CH32V10x_H
     /* SysTick configure */
     const uint32_t SysTick_Msk_Mode = (uint32_t)(1U << 4);
     const uint32_t SysTick_Msk_STCLK = (uint32_t)(1U << 2);
@@ -74,7 +75,16 @@ extern "C" {
 
     /* Init the global var */
     g_systick_div = (SystemCoreClock / (SysTick_Msk_STCLK ? (8000) : (1000)));
+#else
+    /* SysTick configure */
+    const uint32_t SysTick_Msk_Enable_with_8Div = (uint32_t)(1U << 0);
+    SysTick->CTLR |= SysTick_Msk_Enable_with_8Div;
 
+    /* Init the global var */
+    g_systick_div = SystemCoreClock / 8000;
+#endif /* __CH32V10x_H */
+
+    /* global var */
     g_systick_is_init = SIMPLEBTN_SYSTICK_IS_INIT;
  }
 
@@ -88,7 +98,8 @@ extern "C" {
   */
  WEAK uint32_t HAL_GetTick(void)
  {
-    return (uint32_t) (SysTick->CNT / g_systick_div);
+    volatile uint64_t* P_CNT = (uint64_t*) &(SysTick->CNTL0);
+    return (uint32_t) ( (*P_CNT) / g_systick_div);
  }
 
  WEAK void HAL_Delay(uint32_t Delay)

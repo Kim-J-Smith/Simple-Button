@@ -446,7 +446,7 @@ int main(void) {
 ### <a id="组合键">组合键</a>
 - 有时候我们希望按键的组合能够有全新的作用。这时就要使用**组合键**功能。
 - 在文件`simple_button_config.h`开头的`CUSTOMIZATION`中找到`Mode-Set`，将`#define SIMPLEBTN_MODE_ENABLE_COMBINATION               0`改为`#define SIMPLEBTN_MODE_ENABLE_COMBINATION               1`，即可启用**组合键**。
-- 本项目实现组合键的方式是 `前驱按键` + `后继按键`。组合键的回调函数绑定在`后继按键`处，同时在`后继按键`处指定它的`前驱按键`。当用户在`前驱按键`按下期间，按下`后继按键`，就会触发绑定在`后继按键`上的组合键回调函数。
+- 本项目实现组合键的方式是 `前驱按键` + `后继按键`。组合键的回调函数绑定在`后继按键`处，同时在`后继按键`处指定它的`前驱按键`。当用户在`前驱按键`按下期间，按下`后继按键`，就会触发绑定在`后继按键`上的组合键回调函数。（使用**SIMPLEBTN__CMBBTN_SETCALLBACK()**宏完成）
 - 组合键是有顺序的。`按键A + 按键B` 与 `按键B + 按键A`是不同的组合键。
 - 在组合键**触发后**，`前驱按键`与`后继按键`都不会触发它们的短按、长按/计时长按/长按保持、双击/计数多击回调函数。（**但在组合键触发前，如果启用了[长按保持](#长按保持)模式并先触发了长按保持回调，组合键将不会生效！！**）
 - 组合键回调函数虽然不会以参数形式传入异步处理函数，但**异步处理函数不能缺失**。
@@ -472,14 +472,14 @@ int main(void) {
     /* 初始化之后配置组合键 */
 
     // SB2的前置按键是SB1，同时配置 SB1 --> SB2 的组合回调
-    SimpleButton_SB2.Public.combinationConfig.previousButton = &SimpleButton_SB1;
-    SimpleButton_SB2.Public.combinationConfig.callBack = Cmb_SB1_then_SB2_CallBack;
+    SIMPLEBTN__CMBBTN_SETCALLBACK(SimpleButton_SB1, SimpleButton_SB2, Cmb_SB1_then_SB2_CallBack);
 
     // SB1的前置按键是SB2，同时配置 SB2 --> SB1 的组合回调
-    SimpleButton_SB1.Public.combinationConfig.previousButton = &SimpleButton_SB2;
-    SimpleButton_SB1.Public.combinationConfig.callBack = Cmb_SB2_then_SB1_CallBack;
+    SIMPLEBTN__CMBBTN_SETCALLBACK(SimpleButton_SB2, SimpleButton_SB1, Cmb_SB2_then_SB1_CallBack);
 
     while (1) {
+
+        // asynchronousHandler 不能省略，即使传入参数都为NULL
         SimpleButton_SB1.Methods.asynchronousHandler(
             NULL,
             NULL,

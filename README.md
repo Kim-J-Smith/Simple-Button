@@ -443,7 +443,7 @@ int main(void) {
 ### Button Combinations
 - Sometimes we want a combination of buttons to do something completely new. This is where **button combinations** come in.
 - Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 0` to `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 1 `to enable **button combinations**.
-- The button combination in this project is `predecessor button` + `successor(next) button`. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered.
+- The button combination in this project is `predecessor button` + `successor(next) button`. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered. (Using **SIMPLEBTN__CMBBTN_SETCALLBACK()** macro)
 - button combinations are in order. `button A + button B` is A different combination from `button B + button A`.
 - Neither the `predecessor` nor the `successor` button will trigger their short press, long press/timed long press/hold, double click/count multi-click callbacks **after the button combination fires**. (**But if the [keep-long-press](# keep-long-press) mode is enabled and the keep-long-press callback is triggered before the buttonstroke is triggered, the buttonstroke will not work!!**)
 - While composite button callbacks don't pass asynchronous handlers as arguments, **async handlers can't be missing**.
@@ -469,14 +469,14 @@ int main(void) {
     /* Configure composite buttons after initialization */
 
     // SB2 prepend SB1 and configure the SB1 --> SB2 combo callback
-    SimpleButton_SB2.Public.combinationConfig.previousButton = &SimpleButton_SB1;
-    SimpleButton_SB2.Public.combinationConfig.callBack = Cmb_SB1_then_SB2_CallBack;
+    SIMPLEBTN__CMBBTN_SETCALLBACK(SimpleButton_SB1, SimpleButton_SB2, Cmb_SB1_then_SB2_CallBack);
 
     // SB1 prepend SB2 and configure the SB2 --> SB1 combo callback
-    SimpleButton_SB1.Public.combinationConfig.previousButton = &SimpleButton_SB2;
-    SimpleButton_SB1.Public.combinationConfig.callBack = Cmb_SB2_then_SB1_CallBack;
+    SIMPLEBTN__CMBBTN_SETCALLBACK(SimpleButton_SB2, SimpleButton_SB1, Cmb_SB2_then_SB1_CallBack);
 
     while (1) {
+
+        // // asynchronousHandler cannot be omitted, even if all passed parameters are NULL.
         SimpleButton_SB1.Methods.asynchronousHandler(
             NULL,
             NULL,

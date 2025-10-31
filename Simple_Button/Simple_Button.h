@@ -576,6 +576,25 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
     SIMPLEBTN_CONNECT3(SIMPLEBTN_NAMESPACE, __name, _Init)(void);
 
 
+/**
+ * @def             SIMPLEBTN__CMBBTN_SETCALLBACK
+ * @brief           Set callback function for @b Combination-Button.
+ * 
+ * @param[in]       preButton - The `previous button` of @b Combination-Button.
+ *                  `previous button` is the button that is pressed first.
+ * @param[inout]    nextButton - The `next button` of @b Combination-Button.
+ *                  `previous button` is the button that is pressed second.
+ * @param[in]       callback - The callback function of @b Combination-Button.
+ * 
+ * @attention       Make sure the macro `SIMPLEBTN_MODE_ENABLE_COMBINATION` is defined as 1.
+ */
+#define SIMPLEBTN__CMBBTN_SETCALLBACK(preButton, nextButton, callback)          \
+    do {                                                                        \
+        (nextButton).Public.combinationConfig.previousButton = &(preButton);    \
+        (nextButton).Public.combinationConfig.callBack = callback;              \
+    } while(0)
+
+
 SIMPLEBTN_C_API void
 SimpleButton_DynamicButton_Init(
     SimpleButton_Type_DynamicBtn_t* const self,

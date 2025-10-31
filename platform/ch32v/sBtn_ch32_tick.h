@@ -5,7 +5,7 @@
  * 
  * @brief           Header file to declare ch32 tick APIs.
  * 
- * @version         0.2.0 ( 0010L )
+ * @version         0.2.1 ( 0011L )
  * 
  * @date            2025-10-03
  * 
@@ -17,7 +17,7 @@
  *                  <https://github.com/Kim-J-Smith/CH32-SimpleButton>
  */
 #ifndef     SIMPLEBUTTON_CH32_TICK_H__
-#define     SIMPLEBUTTON_CH32_TICK_H__      0010L
+#define     SIMPLEBUTTON_CH32_TICK_H__      0011L
 
 #include    <stdint.h>
 #include    "debug.h"

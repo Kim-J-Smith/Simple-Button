@@ -60,11 +60,11 @@
 
 - **Under the guidance of the [Design Concept](#brief-instruction-of-design), this project has implemented a pure C language button project based on the C99 standard (or C++11 standard).**
 
-1. ✅ **Comprehensive Features** : This project currently supports *short press, long press, timer long press, double push, counter multiple push, combination buttons, and long press hold*.
+1. ✅ **Comprehensive Features** : This project currently supports *short press, long press, [timer long press](#timer-long-push), double push, [counter multiple push](#counter-repeat-push), [combination buttons](#button-combinations), and [long press hold](#long-push-hold)*.
 
 2. ✅ **State Machine** : This project employs a state machine for code organization to achieve software debouncing and has strong scalability. However, **users can use it easily without having to understand the details of the state machine.**
 
-3. ✅ **External Interrupt(EXTI)** : This project uses an external interrupt(EXTI) trigger button, *naturally supporting low power consumption*. The project also provides a line of code to determine and enter a low-power interface.
+3. ✅ **External Interrupt(EXTI)** : This project uses an external interrupt(EXTI) trigger button, *naturally supporting [low power consumption](#low-power)*. The project also provides a line of code to determine and enter a low-power interface.
 
 4. ✅ **Asynchronous Processing** : The callback function is processed asynchronously to reduce the interrupt dwell time.
 
@@ -443,7 +443,7 @@ int main(void) {
 ### Button Combinations
 - Sometimes we want a combination of buttons to do something completely new. This is where **button combinations** come in.
 - Find `Mode-Set` in `CUSTOMIZATION` at the top of the file `simple_button_config.h`, Change `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 0` to `#define SIMPLEBTN_MODE_ENABLE_COMBINATION 1 `to enable **button combinations**.
-- The button combination in this project is `predecessor button` + `successor(next) button`. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered.
+- The button combination in this project is `predecessor button` + `successor(next) button`. The composite button's callback is bound to the `next button` and specifies its` previous button `at the` next button `. When the user presses the `next button` during the `previous button` press, the button combination callback function bound to the `next button` is triggered. (Using **SIMPLEBTN__CMBBTN_SETCALLBACK()** macro)
 - button combinations are in order. `button A + button B` is A different combination from `button B + button A`.
 - Neither the `predecessor` nor the `successor` button will trigger their short press, long press/timed long press/hold, double click/count multi-click callbacks **after the button combination fires**. (**But if the [keep-long-press](# keep-long-press) mode is enabled and the keep-long-press callback is triggered before the buttonstroke is triggered, the buttonstroke will not work!!**)
 - While composite button callbacks don't pass asynchronous handlers as arguments, **async handlers can't be missing**.
@@ -469,14 +469,14 @@ int main(void) {
     /* Configure composite buttons after initialization */
 
     // SB2 prepend SB1 and configure the SB1 --> SB2 combo callback
-    SimpleButton_SB2.Public.combinationConfig.previousButton = &SimpleButton_SB1;
-    SimpleButton_SB2.Public.combinationConfig.callBack = Cmb_SB1_then_SB2_CallBack;
+    SIMPLEBTN__CMBBTN_SETCALLBACK(SimpleButton_SB1, SimpleButton_SB2, Cmb_SB1_then_SB2_CallBack);
 
     // SB1 prepend SB2 and configure the SB2 --> SB1 combo callback
-    SimpleButton_SB1.Public.combinationConfig.previousButton = &SimpleButton_SB2;
-    SimpleButton_SB1.Public.combinationConfig.callBack = Cmb_SB2_then_SB1_CallBack;
+    SIMPLEBTN__CMBBTN_SETCALLBACK(SimpleButton_SB2, SimpleButton_SB1, Cmb_SB2_then_SB1_CallBack);
 
     while (1) {
+
+        // // asynchronousHandler cannot be omitted, even if all passed parameters are NULL.
         SimpleButton_SB1.Methods.asynchronousHandler(
             NULL,
             NULL,
@@ -649,18 +649,18 @@ stateDiagram-v2
 
 - `__WFI()` is undoubtedly the simplest function for entering low-power mode, but doing so may not yield the exact results one expects. Here are some suggestions for achieving low power consumption: 
 
-1. Before entering the low-power mode, it is recommended to configure all I/O as pull-up/pull-down inputs or analog inputs to prevent floating of the chip I/O and the generation of leakage current. [1]
+1. Before entering the low-power mode, it is recommended to configure all I/O as pull-up/pull-down inputs or analog inputs to prevent floating of the chip I/O and the generation of leakage current. <sup>[1](#ref-low-power-wch)</sup>
 
 
-2. For the small package type of chips, compared to the largest package, the unconnected pins should be configured as pull-up/pull-down inputs or analog inputs; otherwise, it may affect the current indicators. [1]
+2. For the small package type of chips, compared to the largest package, the unconnected pins should be configured as pull-up/pull-down inputs or analog inputs; otherwise, it may affect the current indicators. <sup>[1](#ref-low-power-wch)</sup>
 
 
-3. Release the SWD debugging interface and configure it as a GPIO function. It should be set as an input with pull-up/pull-down or as an analog input (the SWD function will be restored after wake-up). [1]
+3. Release the SWD debugging interface and configure it as a GPIO function. It should be set as an input with pull-up/pull-down or as an analog input (the SWD function will be restored after wake-up). <sup>[1](#ref-low-power-wch)</sup>
 
 
 4. It is recommended to completely turn off all unnecessary peripherals before entering the low-power mode. If conditions permit, disable the PLL switching to a lower-speed clock to save energy. 
 
-[1]: Refer to https://github.com/openwch/ch32_application_notes 
+<a id="ref-low-power-wch">[1]</a>: Refer to https://github.com/openwch/ch32_application_notes 
 
 5. Therefore, you may need to customize the `SIMPLEBTN_FUNC_START_LOW_POWER()` macro interface, which will be called by `SIMPLEBTN__START_LOWPOWER(...)`. The pseudo-code example is as follows:
 

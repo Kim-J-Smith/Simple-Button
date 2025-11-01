@@ -3,7 +3,8 @@
  * 
  * @author          Kim-J-Smith
  * 
- * @brief           A template for the button is provided
+ * @brief           Header file of Simple-Button. This file contains
+ *                  necessary declarations of functions.
  * 
  * @version         0.8.x
  * 

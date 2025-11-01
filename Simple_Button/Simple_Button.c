@@ -3,7 +3,10 @@
  * 
  * @author          Kim-J-Smith
  * 
- * @brief           State Machine and dynamic-button functions
+ * @brief           Source file of Simple-Button. This file contains 
+ *                  functions for button-init, interrupt-handler, and
+ *                  the State-Machine. The dynamic button functions 
+ *                  are also here.
  * 
  * @version         0.8.x
  * 

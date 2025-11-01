@@ -8,6 +8,8 @@
 
 - [Contents](#contents)
 
+- [Version number rule](#version-number-rule)
+
 - [Brief Introduction](#brief-introduction)
     - [Brief instruction of design](#brief-instruction-of-design)
     - [Brief introduction of the feature](#brief-introduction-of-the-feature)
@@ -34,6 +36,24 @@
 - [Dynamic Button](#dynamic-button)
 
 - [Derivative Projects](#derivative-project)
+
+---
+
+## Version number rule
+
+The version number is composed of `major version number`.`minor version number`.`patch number`-`stability code`-`absolute number`. 
+
+- *`major version number`*: Changes when there are major incompatible updates.
+
+- *`minor version number`*: Changes when new features, functions are added or major bugs are fixed.
+
+- *`patch number`*: Changes when bugs are fixed, patches are added, and documentation and comments are corrected.
+
+- *`stability code`*: Can be `alpha.x`, `beta.x`, or `stable`, with stability increasing from left to right.
+
+- *`absolute number`*: The version number, each different version has a unique number, and the new version number is greater than the old one.
+
+[Back to Contents](#contents)
 
 ---
 

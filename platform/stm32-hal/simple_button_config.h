@@ -19,7 +19,7 @@
  *                  <https://github.com/Kim-J-Smith/STM32-SimpleButton>
  */
 #ifndef     SIMPLEBUTTON_CONFIG_H__
-#define     SIMPLEBUTTON_CONFIG_H__     0017L
+#define     SIMPLEBUTTON_CONFIG_H__     0018L
 #include <stdint.h>
 
 /** @p ================================================================ **/

@@ -19,7 +19,7 @@
  *                  <https://github.com/Kim-J-Smith/STM32-SimpleButton>
  */
 #ifndef     SIMPLEBUTTON_CONFIG_H__
-#define     SIMPLEBUTTON_CONFIG_H__     0018L
+#define     SIMPLEBUTTON_CONFIG_H__     1018L
 #include <stdint.h>
 
 /** @p ================================================================ **/
@@ -31,7 +31,7 @@
  * 
  * 1. @e Head-File (Your head file depending on your chip)
  * 
- * 2. @e Simple-Button-Type (The Type of Simple-Button)
+ * 2. @e Simple-Button-Type (The Types used by Simple-Button)
  * 
  * 3. @e Other-Functions (Functions for read-pin, debug, low-power, ...)
  * 

@@ -5,7 +5,7 @@
  * 
  * @brief           The configuration file of the Simple_Button file.
  * 
- * @version         0.7.5 ( SIMPLEBUTTON_CONFIG_H__ == 0017L )
+ * @version         0.8.x
  * 
  * @date            2025-10-03
  * 
@@ -168,6 +168,14 @@ void simpleButton_Private_InitEXTI(
 ) {
     /* Write your code to initialize the GPIO/EXTI/NVIC ... */
     /* (void)xxx is used to suppress warning: "unused variables" */
+
+    /* If you want to initialize the GPIO and EXTI in other place,
+     * you can just ignore this function and do nothing here.
+     *
+     * In another words, for example, I don't want to initialize the GPIO,
+     * EXTI, and the NVIC of EXTI with function named `SimpleButton__name_Init()`,
+     * then I will keep this function empty.
+     */
     (void)GPIOX_Base;
     (void)GPIO_Pin_X;
     (void)EXTI_Trigger_X;

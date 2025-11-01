@@ -5,7 +5,7 @@
  * 
  * @brief           The configuration file of the Simple_Button file.
  * 
- * @version         0.7.5 ( SIMPLEBUTTON_CONFIG_H__ == 0017L )
+ * @version         0.8.x
  * 
  * @date            2025-10-03
  * 

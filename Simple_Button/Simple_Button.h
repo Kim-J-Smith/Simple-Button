@@ -5,7 +5,7 @@
  * 
  * @brief           A template for the button is provided
  * 
- * @version         0.7.5 ( SIMPLEBUTTON_H__ == 0017L )
+ * @version         0.8.x
  * 
  * @date            2025-10-03
  * 
@@ -286,17 +286,7 @@ SIMPLEBTN_C_API void simpleButton_Private_InitStructMethods(
     simpleButton_Type_InterruptHandler_t interruptHandler
 );
 
-/**
- * @brief           Initialize the status and config of button object.
- * 
- * @param[inout]    self - Pointer to the button object.
- * @param[in]       GPIOX_BASE - The base address of the GPIO port 
- *                  connected to the button.
- * @param[in]       asynchronousHandler - Function pointer of asynchronous handler.
- * @param[in]       interruptHandler - Function pointer of interrupt handler.
- * 
- * @return          None
- */
+
 SIMPLEBTN_C_API void simpleButton_Private_InitStruct(
     simpleButton_Type_Button_t* self,
     simpleButton_Type_AsynchronousHandler_t asynchronousHandler,
@@ -339,27 +329,12 @@ SIMPLEBTN_FORCE_INLINE void simpleButton_Private_InitButton(
 
 }
 
-/**
- * @brief           Change the status of each button when during the EXTI interrupt
- *                  service routine.
- * 
- * @return          None
- */
+
 SIMPLEBTN_C_API void simpleButton_Private_InterruptHandler(
     simpleButton_Type_PrivateBtnStatus_t* self_private
 );
 
-/**
- * @brief           Asynchronously call the callback function in while loop.
- * @param[inout]    self - pointer to self struct.
- * @param[in]       gpiox_base - Address of GPIO port connected to the button.
- * @param[in]       gpio_pin_x - GPIO pin number connected to the button.
- * @param[in]       normal_pin_val - Normal(didn't push) pin value of button pin. (can be 1 or 0)
- * @param[in]       shortPushCB - callback function for short push.
- * @param[in]       longPushCB - callback function for long push.
- * @param[in]       repeatPushCB - callback function for repeat push.
- * @return          None
- */
+
 SIMPLEBTN_C_API void
 simpleButton_Private_AsynchronousHandler(
     simpleButton_Type_PrivateBtnStatus_t* const self_private,
@@ -555,7 +530,7 @@ SimpleButton_DynamicButton_Init(
     SimpleButton_Type_DynamicBtn_t* const self,
     simpleButton_Type_GPIOBase_t    GPIO_Base,
     simpleButton_Type_GPIOPin_t     GPIO_Pin,
-    simpleButton_Type_GPIOPinVal_t  normalPinVal
+    simpleButton_Type_GPIOPinVal_t  inactiveLevel
 );
 
 SIMPLEBTN_C_API void

@@ -5,7 +5,7 @@
  * 
  * @brief           State Machine and dynamic-button functions
  * 
- * @version         0.7.5 ( 0017L )
+ * @version         0.8.x
  * 
  * @date            2025-10-03
  * 
@@ -608,7 +608,7 @@ simpleButton_Private_AsynchronousHandler(
  * @param[in]       GPIO_Base - The base address of the GPIO port 
  *                  connected to the button.
  * @param[in]       GPIO_Pin - The GPIO Pin number connected to the button.
- * @param[in]       normalPinVal - Normal(didn't push) pin value of button pin. (can be 1 or 0)
+ * @param[in]       inactiveLevel - GPIO Pin level that didn't be pressed. (can be 1 or 0)
  * 
  * @return          None
  */
@@ -617,13 +617,13 @@ SimpleButton_DynamicButton_Init(
     SimpleButton_Type_DynamicBtn_t* const self,
     simpleButton_Type_GPIOBase_t    GPIO_Base,
     simpleButton_Type_GPIOPin_t     GPIO_Pin,
-    simpleButton_Type_GPIOPinVal_t  normalPinVal
+    simpleButton_Type_GPIOPinVal_t  inactiveLevel
 ) {
     SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN(); /* critical section begin */
 
     self->GPIO_Base = GPIO_Base;
     self->GPIO_Pin = GPIO_Pin;
-    self->normalPinVal = normalPinVal;
+    self->normalPinVal = inactiveLevel;
 
     simpleButton_Private_InitStructPrivate(&(self->Private));
 

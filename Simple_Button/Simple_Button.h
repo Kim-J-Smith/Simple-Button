@@ -18,7 +18,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #ifndef     SIMPLEBUTTON_H__
-#define     SIMPLEBUTTON_H__    1018L
+#define     SIMPLEBUTTON_H__    1019L
 
 /* Incldue the config file of Simple_Button and check the version */
 #include    "simple_button_config.h"

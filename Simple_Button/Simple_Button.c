@@ -20,7 +20,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #include    "Simple_Button.h"
-#if ( SIMPLEBUTTON_H__ != 1018L )
+#if ( SIMPLEBUTTON_H__ != 1019L )
  #warning [Simple-Button]: There may be something wrong with the version.
 #endif /* SIMPLEBTN_C_API */
 

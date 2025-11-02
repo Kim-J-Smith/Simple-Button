@@ -198,54 +198,73 @@ void simpleButton_Private_InitEXTI(
     /* Initialize the GPIOx Clock */
 #if SIMPLEBTN_CUBEMX_G_EXTI == 0
     switch (GPIOX_Base) {
+ #if defined(GPIOA_BASE) && defined(__HAL_RCC_GPIOA_CLK_ENABLE)
     case GPIOA_BASE:
         __HAL_RCC_GPIOA_CLK_ENABLE();
         break;
+ #endif /* GPIOA_BASE */
+ #if defined(GPIOB_BASE) && defined(__HAL_RCC_GPIOB_CLK_ENABLE)
     case GPIOB_BASE:
         __HAL_RCC_GPIOB_CLK_ENABLE();
         break;
+ #endif /* GPIOB_BASE */
+ #if defined(GPIOC_BASE) && defined(__HAL_RCC_GPIOC_CLK_ENABLE)
     case GPIOC_BASE:
         __HAL_RCC_GPIOC_CLK_ENABLE();
         break;
+ #endif /* GPIOC_BASE */
+ #if defined(GPIOD_BASE) && defined(__HAL_RCC_GPIOD_CLK_ENABLE)
     case GPIOD_BASE:
         __HAL_RCC_GPIOD_CLK_ENABLE();
         break;
+ #endif /* GPIOD_BASE */
+ #if defined(GPIOE_BASE) && defined(__HAL_RCC_GPIOE_CLK_ENABLE)
     case GPIOE_BASE:
         __HAL_RCC_GPIOE_CLK_ENABLE();
         break;
- #if defined(GPIOF_BASE)
+ #endif /* GPIOE_BASE */
+ #if defined(GPIOF_BASE) && defined(__HAL_RCC_GPIOF_CLK_ENABLE)
+    case GPIOF_BASE:
         __HAL_RCC_GPIOF_CLK_ENABLE();
         break;
  #endif /* GPIOF_BASE */
- #if defined(GPIOG_BASE)
+ #if defined(GPIOG_BASE) && defined(__HAL_RCC_GPIOG_CLK_ENABLE)
+    case GPIOG_BASE:
         __HAL_RCC_GPIOG_CLK_ENABLE();
         break;
  #endif /* GPIOG_BASE */
- #if defined(GPIOH_BASE)
+ #if defined(GPIOH_BASE) && defined(__HAL_RCC_GPIOH_CLK_ENABLE)
+    case GPIOH_BASE:
         __HAL_RCC_GPIOH_CLK_ENABLE();
         break;
  #endif /* GPIOH_BASE */
- #if defined(GPIOI_BASE)
+ #if defined(GPIOI_BASE) && defined(__HAL_RCC_GPIOI_CLK_ENABLE)
+    case GPIOI_BASE:
         __HAL_RCC_GPIOI_CLK_ENABLE();
         break;
  #endif /* GPIOI_BASE */
- #if defined(GPIOJ_BASE)
+ #if defined(GPIOJ_BASE) && defined(__HAL_RCC_GPIOJ_CLK_ENABLE)
+    case GPIOJ_BASE:
         __HAL_RCC_GPIOJ_CLK_ENABLE();
         break;
  #endif /* GPIOJ_BASE */
- #if defined(GPIOK_BASE)
+ #if defined(GPIOK_BASE) && defined(__HAL_RCC_GPIOK_CLK_ENABLE)
+    case GPIOK_BASE:
         __HAL_RCC_GPIOK_CLK_ENABLE();
         break;
  #endif /* GPIOK_BASE */
- #if defined(GPIOL_BASE)
+ #if defined(GPIOL_BASE) && defined(__HAL_RCC_GPIOL_CLK_ENABLE)
+    case GPIOL_BASE:
         __HAL_RCC_GPIOL_CLK_ENABLE();
         break;
  #endif /* GPIOL_BASE */
- #if defined(GPIOM_BASE)
+ #if defined(GPIOM_BASE) && defined(__HAL_RCC_GPIOM_CLK_ENABLE)
+    case GPIOM_BASE:
         __HAL_RCC_GPIOM_CLK_ENABLE();
         break;
  #endif /* GPIOM_BASE */
- #if defined(GPION_BASE)
+ #if defined(GPION_BASE) && defined(__HAL_RCC_GPION_CLK_ENABLE)
+    case GPION_BASE:
         __HAL_RCC_GPION_CLK_ENABLE();
         break;
  #endif /* GPION_BASE */

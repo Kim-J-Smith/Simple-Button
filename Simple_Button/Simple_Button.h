@@ -509,7 +509,7 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
     SIMPLEBTN_CONNECT3(SIMPLEBTN_NAMESPACE, __name, _Init)(void);
 
 
-#if defined(SIMPLEBTN_MODE_ENABLE_COMBINATION)
+#if ( SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 )
 
 /**
  * @def             SIMPLEBTN__CMBBTN_SETCALLBACK
@@ -529,7 +529,7 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
         (nextButton).Public.combinationConfig.callBack = callback;                      \
     } while(0)
 
-#endif /* defined(SIMPLEBTN_MODE_ENABLE_COMBINATION) */
+#endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
 
 SIMPLEBTN_C_API void
 SimpleButton_DynamicButton_Init(

@@ -192,7 +192,7 @@ typedef struct simpleButton_Type_PrivateBtnStatus_t {
  struct simpleButton_Type_Button_t; /* just declare */
  typedef struct simpleButton_Type_CmbBtnConfig_t {
 
-    volatile struct simpleButton_Type_Button_t* previousButton;
+    volatile struct simpleButton_Type_PrivateBtnStatus_t* previousButton;
 
     volatile simpleButton_Type_CombinationPushCallBack_t callBack;
 
@@ -259,6 +259,7 @@ typedef struct simpleButton_Type_Button_t {
  *              see <../README.md/#dynamic-button> for more details.
  */
 typedef struct SimpleButton_Type_DynamicBtn_t {
+
     simpleButton_Type_GPIOBase_t    GPIO_Base;
 
     simpleButton_Type_GPIOPin_t     GPIO_Pin;
@@ -268,6 +269,7 @@ typedef struct SimpleButton_Type_DynamicBtn_t {
     simpleButton_Type_PrivateBtnStatus_t Private;
 
     simpleButton_Type_PublicBtnStatus_t Public;
+    
 } SimpleButton_Type_DynamicBtn_t;
 
 /* Init the Button.Public */
@@ -519,10 +521,10 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
  * 
  * @attention       Make sure the macro `SIMPLEBTN_MODE_ENABLE_COMBINATION` is defined as 1.
  */
-#define SIMPLEBTN__CMBBTN_SETCALLBACK(preButton, nextButton, callback)          \
-    do {                                                                        \
-        (nextButton).Public.combinationConfig.previousButton = &(preButton);    \
-        (nextButton).Public.combinationConfig.callBack = callback;              \
+#define SIMPLEBTN__CMBBTN_SETCALLBACK(preButton, nextButton, callback)                  \
+    do {                                                                                \
+        (nextButton).Public.combinationConfig.previousButton = &((preButton).Private);  \
+        (nextButton).Public.combinationConfig.callBack = callback;                      \
     } while(0)
 
 

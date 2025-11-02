@@ -25,6 +25,15 @@
 #endif /* SIMPLEBTN_C_API */
 
 
+/* HOT : Trigger hotspot optimization */
+#if defined(__GNUC__) || defined(__clang__)
+ #define HOT_ __attribute__((hot))
+#elif defined(_MSC_VER) && ( _MSC_VER >= 1900 )
+ #define HOT_ __declspec(hot)
+#else
+ #define HOT_ 
+#endif /* HOT */
+
 SIMPLEBTN_C_API void simpleButton_Private_InitStructPublic(
     simpleButton_Type_PublicBtnStatus_t* self_public
 ) {
@@ -301,11 +310,11 @@ simpleButton_Private_CmbBtnAfterReleaseOK(
     }
 
     /* prev-button should be [Combination]_WaitForEnd. */
-    if (self_public->combinationConfig.previousButton->Private.state != simpleButton_State_Combination_WaitForEnd) {
-        if (self_public->combinationConfig.previousButton->Private.state != simpleButton_State_Wait_For_End) {
+    if (self_public->combinationConfig.previousButton->state != simpleButton_State_Combination_WaitForEnd) {
+        if (self_public->combinationConfig.previousButton->state != simpleButton_State_Wait_For_End) {
             return; /* prev-button isn't [Combination]_WaitForEnd. */
         } else {
-            self_public->combinationConfig.previousButton->Private.state = simpleButton_State_Combination_WaitForEnd;
+            self_public->combinationConfig.previousButton->state = simpleButton_State_Combination_WaitForEnd;
         }
     }
 
@@ -507,7 +516,7 @@ simpleButton_Private_StateDefault_Handler(
  * @param[in]       repeatPushCB - callback function for repeat push.
  * @return          None
  */
-SIMPLEBTN_C_API void
+SIMPLEBTN_C_API HOT_ void
 simpleButton_Private_AsynchronousHandler(
     simpleButton_Type_PrivateBtnStatus_t* const self_private,
     simpleButton_Type_PublicBtnStatus_t* const self_public,
@@ -668,7 +677,7 @@ simpleButton_Private_DynamicBtn_CheckState(
  * 
  * @return          None
  */
-SIMPLEBTN_C_API void
+SIMPLEBTN_C_API HOT_ void
 SimpleButton_DynamicButton_Handler(
     SimpleButton_Type_DynamicBtn_t* const self,
     simpleButton_Type_ShortPushCallBack_t shortPushCallBack,

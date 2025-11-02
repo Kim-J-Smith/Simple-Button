@@ -18,7 +18,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #ifndef     SIMPLEBUTTON_H__
-#define     SIMPLEBUTTON_H__    0017L
+#define     SIMPLEBUTTON_H__    1018L
 
 /* Incldue the config file of Simple_Button and check the version */
 #include    "simple_button_config.h"
@@ -192,7 +192,7 @@ typedef struct simpleButton_Type_PrivateBtnStatus_t {
  struct simpleButton_Type_Button_t; /* just declare */
  typedef struct simpleButton_Type_CmbBtnConfig_t {
 
-    volatile struct simpleButton_Type_Button_t* previousButton;
+    volatile struct simpleButton_Type_PrivateBtnStatus_t* previousButton;
 
     volatile simpleButton_Type_CombinationPushCallBack_t callBack;
 
@@ -259,6 +259,7 @@ typedef struct simpleButton_Type_Button_t {
  *              see <../README.md/#dynamic-button> for more details.
  */
 typedef struct SimpleButton_Type_DynamicBtn_t {
+
     simpleButton_Type_GPIOBase_t    GPIO_Base;
 
     simpleButton_Type_GPIOPin_t     GPIO_Pin;
@@ -268,6 +269,7 @@ typedef struct SimpleButton_Type_DynamicBtn_t {
     simpleButton_Type_PrivateBtnStatus_t Private;
 
     simpleButton_Type_PublicBtnStatus_t Public;
+    
 } SimpleButton_Type_DynamicBtn_t;
 
 /* Init the Button.Public */
@@ -507,6 +509,8 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
     SIMPLEBTN_CONNECT3(SIMPLEBTN_NAMESPACE, __name, _Init)(void);
 
 
+#if ( SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 )
+
 /**
  * @def             SIMPLEBTN__CMBBTN_SETCALLBACK
  * @brief           Set callback function for @b Combination-Button.
@@ -519,12 +523,13 @@ SIMPLEBTN_FORCE_INLINE uint32_t simpleButton_Private_IsIdle(const simpleButton_T
  * 
  * @attention       Make sure the macro `SIMPLEBTN_MODE_ENABLE_COMBINATION` is defined as 1.
  */
-#define SIMPLEBTN__CMBBTN_SETCALLBACK(preButton, nextButton, callback)          \
-    do {                                                                        \
-        (nextButton).Public.combinationConfig.previousButton = &(preButton);    \
-        (nextButton).Public.combinationConfig.callBack = callback;              \
+ #define SIMPLEBTN__CMBBTN_SETCALLBACK(preButton, nextButton, callback)                  \
+    do {                                                                                \
+        (nextButton).Public.combinationConfig.previousButton = &((preButton).Private);  \
+        (nextButton).Public.combinationConfig.callBack = callback;                      \
     } while(0)
 
+#endif /* SIMPLEBTN_MODE_ENABLE_COMBINATION != 0 */
 
 SIMPLEBTN_C_API void
 SimpleButton_DynamicButton_Init(

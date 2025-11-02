@@ -41,7 +41,7 @@
 
 ## Version number rule
 
-The version number is composed of `major version number`.`minor version number`.`patch number`-`stability code`-`absolute number`. 
+The [version number](/VERSION) is composed of `major version number`.`minor version number`.`patch number`-`stability code`-`absolute number`. 
 
 - *`major version number`*: Changes when there are major incompatible updates.
 

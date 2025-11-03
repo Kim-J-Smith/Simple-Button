@@ -172,7 +172,7 @@ void simpleButton_Private_InitEXTI(
     /* If you want to initialize the GPIO and EXTI in other place,
      * you can just ignore this function and do nothing here.
      *
-     * In another words, for example, I don't want to initialize the GPIO,
+     * In another words, for example, I DON'T want to initialize the GPIO,
      * EXTI, and the NVIC of EXTI with function named `SimpleButton__name_Init()`,
      * then I will keep this function empty.
      */

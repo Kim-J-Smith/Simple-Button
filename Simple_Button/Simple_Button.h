@@ -184,6 +184,8 @@ typedef struct simpleButton_Type_PrivateBtnStatus_t {
 
     uint8_t                         push_time;
 
+    uint8_t                         is_init;
+
 } simpleButton_Type_PrivateBtnStatus_t;
 
 /* struct for combination status and config. */

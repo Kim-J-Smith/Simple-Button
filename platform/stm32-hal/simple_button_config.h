@@ -151,11 +151,6 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 #define SIMPLEBTN_FUNC_INIT_EXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X) \
     simpleButton_Private_InitEXTI(GPIOX_Base, GPIO_Pin_X, EXTI_Trigger_X)
 
-/* ====================== CUSTOMIZATION END ============================ */
-/** @p ================================================================ **/
-
-/* ================ OTHER LOCAL-PLATFORM CUSTOMIZATION ================= */
-
 /** @b ================================================================ **/
 /** @b CubeMX */
 
@@ -169,7 +164,9 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 // EXTI's IRQ sub priority (used only when SIMPLEBTN_CUBEMX_G_NVIC == 0)
 #define SIMPLEBTN_CUBEMX_NVIC_EXTI_SubPriority          0
 
-/** @b ================================================================ **/
+/* ====================== CUSTOMIZATION END ============================ */
+/** @p ================================================================ **/
+
 
 // Macro for force-inline
 #if defined(__GNUC__) || defined(__clang__)
@@ -179,6 +176,9 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 #else
  #define SIMPLEBTN_FORCE_INLINE static inline
 #endif
+
+
+/* ================ OTHER LOCAL-PLATFORM CUSTOMIZATION ================= */
 
 SIMPLEBTN_FORCE_INLINE
 void simpleButton_Private_InitEXTI(

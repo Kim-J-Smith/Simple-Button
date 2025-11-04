@@ -160,7 +160,8 @@ simpleButton_Private_StateWaitForEnd_Handler(
     simpleButton_Type_PublicBtnStatus_t* const self_public,
     const simpleButton_Type_GPIOBase_t gpiox_base,
     const simpleButton_Type_GPIOPin_t  gpio_pin_x,
-    const simpleButton_Type_GPIOPinVal_t normal_pin_val
+    const simpleButton_Type_GPIOPinVal_t normal_pin_val,
+    simpleButton_Type_LongPushCallBack_t longPushCallback
 ) {
     if (SIMPLEBTN_FUNC_READ_PIN(gpiox_base, gpio_pin_x) == normal_pin_val) {
         self_private->timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
@@ -168,9 +169,11 @@ simpleButton_Private_StateWaitForEnd_Handler(
     } 
 #if SIMPLEBTN_MODE_ENABLE_LONGPUSH_HOLD != 0
  #if SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0
-    else if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > self_public->holdPushMinTime)
+    else if (longPushCallback != 0 \
+        && SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > self_public->holdPushMinTime)
  #else
-    else if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > SIMPLEBTN_TIME_HOLD_PUSH_MIN)
+    else if (longPushCallback != 0 \
+        && SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > SIMPLEBTN_TIME_HOLD_PUSH_MIN)
  #endif /* SIMPLEBTN_MODE_ENABLE_ADJUSTABLE_TIME != 0 */
     {
         self_private->timeStamp_loop = SIMPLEBTN_FUNC_GET_TICK();
@@ -563,7 +566,7 @@ simpleButton_Private_AsynchronousHandler(
     }
 
     case simpleButton_State_Wait_For_End: {
-        simpleButton_Private_StateWaitForEnd_Handler(self_private, self_public, gpiox_base, gpio_pin_x, normal_pin_val);
+        simpleButton_Private_StateWaitForEnd_Handler(self_private, self_public, gpiox_base, gpio_pin_x, normal_pin_val, longPushCB);
         break;
     }
 

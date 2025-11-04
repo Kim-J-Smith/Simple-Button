@@ -20,7 +20,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #include    "Simple_Button.h"
-#if ( SIMPLEBUTTON_H__ != 1018L )
+#if ( SIMPLEBUTTON_H__ != 1019L )
  #warning [Simple-Button]: There may be something wrong with the version.
 #endif /* SIMPLEBTN_C_API */
 
@@ -33,6 +33,9 @@
 #else
  #define HOT_ 
 #endif /* HOT */
+
+/* FLAG : The button is initialized */
+#define SIMPLEBTN_IS_INIT_ 0x55
 
 SIMPLEBTN_C_API void simpleButton_Private_InitStructPublic(
     simpleButton_Type_PublicBtnStatus_t* self_public
@@ -64,6 +67,9 @@ SIMPLEBTN_C_API void simpleButton_Private_InitStructPrivate(
     self_private->state = simpleButton_State_Wait_For_Interrupt;
     self_private->timeStamp_interrupt = 0;
     self_private->timeStamp_loop = 0;
+
+    /* flag : is initialized */
+    self_private->is_init = SIMPLEBTN_IS_INIT_;
 }
 
 SIMPLEBTN_C_API void simpleButton_Private_InitStructMethods(
@@ -527,6 +533,22 @@ simpleButton_Private_AsynchronousHandler(
     simpleButton_Type_LongPushCallBack_t longPushCB,
     simpleButton_Type_RepeatPushCallBack_t repeatPushCB
 ) {
+
+#if defined(SIMPLEBTN_DEBUG)
+
+    /* check the input */
+    if (0 == self_private || 0 == self_public) {
+        SIMPLEBTN_FUNC_PANIC("invalid input in func:simpleButton_Private_AsynchronousHandler", , );
+    }
+
+    /* check the flag */
+    if (self_private->is_init != SIMPLEBTN_IS_INIT_) {
+        SIMPLEBTN_FUNC_PANIC("the button has not be initialized yet", , );
+    }
+
+#endif /* defined(SIMPLEBTN_DEBUG) */
+
+
     SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN_M(); /* begin multi-thread critical section */
 
     switch ( (simpleButton_Type_ButtonState_t)(self_private->state) ) {

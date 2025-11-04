@@ -18,7 +18,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #ifndef     SIMPLEBUTTON_H__
-#define     SIMPLEBUTTON_H__    1018L
+#define     SIMPLEBUTTON_H__    1019L
 
 /* Incldue the config file of Simple_Button and check the version */
 #include    "simple_button_config.h"
@@ -183,6 +183,8 @@ typedef struct simpleButton_Type_PrivateBtnStatus_t {
     volatile SIMPLEBTN_BITFIELD (simpleButton_Type_ButtonState_t) state : 8;
 
     uint8_t                         push_time;
+
+    uint8_t                         is_init;
 
 } simpleButton_Type_PrivateBtnStatus_t;
 

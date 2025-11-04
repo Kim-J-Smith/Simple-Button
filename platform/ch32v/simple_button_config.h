@@ -19,7 +19,7 @@
  *                  <https://github.com/Kim-J-Smith/CH32-SimpleButton>
  */
 #ifndef     SIMPLEBUTTON_CONFIG_H__
-#define     SIMPLEBUTTON_CONFIG_H__     1019L
+#define     SIMPLEBUTTON_CONFIG_H__     1020L
 #include <stdint.h>
 
 /** @p ================================================================ **/

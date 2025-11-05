@@ -183,7 +183,7 @@ simpleButton_Private_StateWaitForEnd_Handler(
     else if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > SIMPLEBTN_TIME__TIMEOUT_NORMAL) {
 
 #if defined(SIMPLEBTN_DEBUG)
-        SIMPLEBTN_FUNC_PANIC("normal long push time out", , );
+        SIMPLEBTN_FUNC_PANIC("normal long push time out", simpleButton_ErrorNum_NormalPushTimeOut, );
 #else
         self_private->push_time = 0;
         self_private->state = simpleButton_State_Wait_For_Interrupt;
@@ -422,7 +422,7 @@ simpleButton_Private_StateCombinationWaitForEnd_Handler(
     } else if (SIMPLEBTN_FUNC_GET_TICK() - self_private->timeStamp_interrupt > SIMPLEBTN_TIME__TIMEOUT_COMBINATION) {
 
 #if defined(SIMPLEBTN_DEBUG)
-        SIMPLEBTN_FUNC_PANIC("combination long push time out", , );
+        SIMPLEBTN_FUNC_PANIC("combination long push time out", simpleButton_ErrorNum_CmbPushTimeOut, );
 #else
         self_private->push_time = 0;
         self_private->state = simpleButton_State_Wait_For_Interrupt;
@@ -505,7 +505,7 @@ simpleButton_Private_StateDefault_Handler(
 
 #if defined(SIMPLEBTN_DEBUG)
     (void)self_private;
-    SIMPLEBTN_FUNC_PANIC("invalid button state", , );
+    SIMPLEBTN_FUNC_PANIC("invalid button state", simpleButton_ErrorNum_invalidState, );
 #else
     self_private->push_time = 0;
     self_private->state = simpleButton_State_Wait_For_Interrupt;
@@ -515,6 +515,7 @@ simpleButton_Private_StateDefault_Handler(
 
 /**
  * @brief           Asynchronously call the callback function in while loop.
+ * 
  * @param[inout]    self_private - pointer to self.Private struct.
  * @param[inout]    self_public - pointer to self.Public struct.
  * @param[in]       gpiox_base - Address of GPIO port connected to the button.
@@ -523,7 +524,15 @@ simpleButton_Private_StateDefault_Handler(
  * @param[in]       shortPushCB - callback function for short push.
  * @param[in]       longPushCB - callback function for long push.
  * @param[in]       repeatPushCB - callback function for repeat push.
+ * 
  * @return          None
+ * 
+ * @note            This function is one of the most important functions in the 
+ *                  Simple-Button project. It is precisely this function that actually 
+ *                  handles the scheduling and processing of the button state machine.
+ * 
+ *                  However, we do not recommend that users use this function directly 
+ *                  unless you are fully aware of what you are doing.
  */
 SIMPLEBTN_C_API HOT_ void
 simpleButton_Private_AsynchronousHandler(
@@ -541,12 +550,18 @@ simpleButton_Private_AsynchronousHandler(
 
     /* check the input */
     if (0 == self_private || 0 == self_public) {
-        SIMPLEBTN_FUNC_PANIC("invalid input in func:simpleButton_Private_AsynchronousHandler", , );
+        SIMPLEBTN_FUNC_PANIC(
+            "invalid input in func:simpleButton_Private_AsynchronousHandler", 
+            simpleButton_ErrorNum_invalidInput, 
+        );
     }
 
     /* check the flag */
     if (self_private->is_init != SIMPLEBTN_IS_INIT_) {
-        SIMPLEBTN_FUNC_PANIC("the button has not be initialized yet", , );
+        SIMPLEBTN_FUNC_PANIC(
+            "the button has not be initialized yet",
+            simpleButton_ErrorNum_NoInit, 
+        );
     }
 
 #endif /* defined(SIMPLEBTN_DEBUG) */

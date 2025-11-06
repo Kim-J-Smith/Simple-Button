@@ -81,7 +81,7 @@ typedef EXTITrigger_TypeDef simpleButton_Type_EXTITrigger_t;
     HAL_GetTick() // or xTaskGetTickCountFromISR() if you use FreeRTOS
 
 #define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc) \
-    do { simpleButton_debug_panic(Cause); } while(0) /* only used in DEBUG mode */
+    simpleButton_debug_panic(Cause, ErrorNum) /* only used in DEBUG mode */
 
 #define SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN() \
     __disable_irq()

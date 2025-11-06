@@ -83,8 +83,8 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 
 #define SIMPLEBTN_FUNC_GET_TICK_FromISR() HAL_GetTick()
 
-/* only used in DEBUG mode */
-#define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc)  do { Error_Handler(); } while (1)
+#define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc) \
+    simpleButton_debug_panic(Cause, ErrorNum) /* only used in DEBUG mode */
 
 #define SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN()  __disable_irq()
 
@@ -180,6 +180,31 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 
 /* ================ OTHER LOCAL-PLATFORM CUSTOMIZATION ================= */
 
+typedef enum simpleButton_Type_ErrorNum_t {
+
+    simpleButton_ErrorNum_NormalPushTimeOut = 0,
+    simpleButton_ErrorNum_CmbPushTimeOut,
+    simpleButton_ErrorNum_invalidState,
+    simpleButton_ErrorNum_invalidInput,
+    simpleButton_ErrorNum_NoInit,
+
+    simpleButton_ErrorNum_FailInitEXTI,
+
+} simpleButton_Type_ErrorNum_t;
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_debug_panic(const char* errCase, simpleButton_Type_ErrorNum_t errNum)
+{
+    /* Only called in debug mode */
+
+    /* Write your code to handle error */
+    /* (void)xxx is used to suppress warning: "unused variables" */
+
+    (void)errCase;
+    (void)errNum;
+    while(1);
+}
+
 SIMPLEBTN_FORCE_INLINE
 void simpleButton_Private_InitEXTI(
     simpleButton_Type_GPIOBase_t    GPIOX_Base,
@@ -269,7 +294,10 @@ void simpleButton_Private_InitEXTI(
         break;
  #endif /* GPION_BASE */
     default:
-        SIMPLEBTN_FUNC_PANIC("unexpected GPIO BASE", , );
+#if ( SIMPLEBTN_MODE_ENABLE_DEBUG != 0 )
+        SIMPLEBTN_FUNC_PANIC("unexpected GPIO BASE", simpleButton_ErrorNum_FailInitEXTI, );
+#endif /* SIMPLEBTN_MODE_ENABLE_DEBUG != 0 */
+        break;
     }
 
     /* Configure the GPIOx */
@@ -343,7 +371,10 @@ void simpleButton_Private_InitEXTI(
         the_exti_IRQ = EXTI15_10_IRQn;
         break;
     default:
-        SIMPLEBTN_FUNC_PANIC("unexpected GPIO Pin", , );
+#if ( SIMPLEBTN_MODE_ENABLE_DEBUG != 0 )
+        SIMPLEBTN_FUNC_PANIC("unexpected GPIO Pin", simpleButton_ErrorNum_FailInitEXTI, );
+#endif /* SIMPLEBTN_MODE_ENABLE_DEBUG != 0 */
+        break;
     }
     HAL_NVIC_SetPriority(
         the_exti_IRQ, 

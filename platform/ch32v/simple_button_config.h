@@ -19,7 +19,7 @@
  *                  <https://github.com/Kim-J-Smith/CH32-SimpleButton>
  */
 #ifndef     SIMPLEBUTTON_CONFIG_H__
-#define     SIMPLEBUTTON_CONFIG_H__     1019L
+#define     SIMPLEBUTTON_CONFIG_H__     1020L
 #include <stdint.h>
 
 /** @p ================================================================ **/
@@ -81,7 +81,7 @@ typedef EXTITrigger_TypeDef simpleButton_Type_EXTITrigger_t;
     HAL_GetTick() // or xTaskGetTickCountFromISR() if you use FreeRTOS
 
 #define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc) \
-    do { simpleButton_debug_panic(Cause); } while(0) /* only used in DEBUG mode */
+    simpleButton_debug_panic(Cause, ErrorNum) /* only used in DEBUG mode */
 
 #define SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN() \
     __disable_irq()
@@ -173,10 +173,28 @@ typedef EXTITrigger_TypeDef simpleButton_Type_EXTITrigger_t;
 
 /* ================ OTHER LOCAL-PLATFORM CUSTOMIZATION ================= */
 
-static inline void simpleButton_debug_panic(const char* cause)
+typedef enum simpleButton_Type_ErrorNum_t {
+
+    simpleButton_ErrorNum_NormalPushTimeOut = 0,
+    simpleButton_ErrorNum_CmbPushTimeOut,
+    simpleButton_ErrorNum_invalidState,
+    simpleButton_ErrorNum_invalidInput,
+    simpleButton_ErrorNum_NoInit,
+
+    simpleButton_ErrorNum_FailInitEXTI,
+
+} simpleButton_Type_ErrorNum_t;
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_debug_panic(const char* errCase, simpleButton_Type_ErrorNum_t errNum)
 {
-    /* deal with the error in debug mode */
-    (void)cause;
+    /* Only called in debug mode */
+
+    /* Write your code to handle error */
+    /* (void)xxx is used to suppress warning: "unused variables" */
+
+    (void)errCase;
+    (void)errNum;
     while(1);
 }
 
@@ -190,13 +208,13 @@ void simpleButton_Private_InitEXTI(
 
     /* Initialize the GPIOx Clock */
     GPIO_InitTypeDef gpio_config;
-    EXTI_InitTypeDef exti_config;    
+    EXTI_InitTypeDef exti_config;
     NVIC_InitTypeDef nvic_config;
-    uint8_t PortSource;         
-    uint8_t PinSource;          
+    uint8_t PortSource;
+    uint8_t PinSource;
     uint32_t EXTI_Line;
     uint32_t RCC_GPIOX;
-                
+
     /* static constexpr assign values to variables */
     switch(GPIOX_Base)
     {
@@ -285,7 +303,9 @@ void simpleButton_Private_InitEXTI(
         break;
 #endif /* defined(GPION_BASE) */
     default:
-        SIMPLEBTN_FUNC_PANIC("unexpected GPIO port", , );
+#if ( SIMPLEBTN_MODE_ENABLE_DEBUG != 0 )
+        SIMPLEBTN_FUNC_PANIC("unexpected GPIO port", simpleButton_ErrorNum_FailInitEXTI, );
+#endif /* SIMPLEBTN_MODE_ENABLE_DEBUG != 0 */
         break;
     }
 
@@ -416,8 +436,10 @@ void simpleButton_Private_InitEXTI(
         break;
 #endif
 
-    default:  
-        SIMPLEBTN_FUNC_PANIC("unexpected GPIO pin", , );
+    default:
+#if ( SIMPLEBTN_MODE_ENABLE_DEBUG != 0 )
+        SIMPLEBTN_FUNC_PANIC("unexpected GPIO pin", simpleButton_ErrorNum_FailInitEXTI, );
+#endif /* SIMPLEBTN_MODE_ENABLE_DEBUG != 0 */
         break;
     } // end switch
 

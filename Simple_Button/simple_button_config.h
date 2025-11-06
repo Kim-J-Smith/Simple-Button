@@ -17,7 +17,7 @@
  *                  <https://github.com/Kim-J-Smith/Simple-Button>
  */
 #ifndef     SIMPLEBUTTON_CONFIG_H__
-#define     SIMPLEBUTTON_CONFIG_H__     1019L
+#define     SIMPLEBUTTON_CONFIG_H__     1020L
 #include <stdint.h>
 
 /** @p ================================================================ **/
@@ -76,7 +76,7 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
     /* for example: HAL_GetTick() or xTaskGetTickCountFromISR() */
 
 #define SIMPLEBTN_FUNC_PANIC(Cause, ErrorNum, etc) \
-    /* for example: do { Error_Handler(ErrorNum); } while (1) */ /* only used in DEBUG mode */
+    simpleButton_debug_panic(Cause, ErrorNum) /* only used in DEBUG mode */
 
 #define SIMPLEBTN_FUNC_CRITICAL_SECTION_BEGIN() \
     /* for example: __disable_irq() */
@@ -159,6 +159,29 @@ typedef uint32_t            simpleButton_Type_EXTITrigger_t;
 #endif
 
 /* ================ OTHER LOCAL-PLATFORM CUSTOMIZATION ================= */
+
+typedef enum simpleButton_Type_ErrorNum_t {
+
+    simpleButton_ErrorNum_NormalPushTimeOut = 0,
+    simpleButton_ErrorNum_CmbPushTimeOut,
+    simpleButton_ErrorNum_invalidState,
+    simpleButton_ErrorNum_invalidInput,
+    simpleButton_ErrorNum_NoInit,
+
+} simpleButton_Type_ErrorNum_t;
+
+SIMPLEBTN_FORCE_INLINE void
+simpleButton_debug_panic(const char* errCase, simpleButton_Type_ErrorNum_t errNum)
+{
+    /* Only called in debug mode */
+
+    /* Write your code to handle error */
+    /* (void)xxx is used to suppress warning: "unused variables" */
+
+    (void)errCase;
+    (void)errNum;
+    while(1);
+}
 
 SIMPLEBTN_FORCE_INLINE
 void simpleButton_Private_InitEXTI(
